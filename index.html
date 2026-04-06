@@ -1,0 +1,2609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hassi Messaoud Refinery — Project Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #0f2447; --navy2: #1a3a6b; --blue: #2563eb; --teal: #0891b2;
+  --green: #16a34a; --amber: #d97706; --red: #dc2626;
+  --gray50: #f8fafc; --gray100: #f1f5f9; --gray200: #e2e8f0;
+  --gray400: #94a3b8; --gray600: #475569; --gray800: #1e293b;
+  --white: #ffffff; --shadow: 0 1px 8px rgba(0,0,0,0.10); --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: #eef2f7; color: var(--gray800); min-height: 100vh; }
+
+/* ── HEADER ── */
+.site-header { background: linear-gradient(135deg,#0f2447 0%,#1a3a6b 60%,#0e4d8a 100%); color:white; border-bottom:4px solid #f59e0b; position:sticky; top:0; z-index:100; box-shadow:0 4px 20px rgba(0,0,0,.25); }
+.header-inner { max-width:1440px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; gap:18px; }
+.header-logo { font-size:1.9rem; flex-shrink:0; }
+.header-text h1 { font-size:1.15rem; font-weight:800; letter-spacing:.3px; }
+.header-text .sub { font-size:.75rem; color:#93c5fd; margin-top:3px; }
+.header-badges { display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; align-items:center; }
+.hbadge { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); border-radius:20px; padding:5px 13px; font-size:.7rem; color:#e2e8f0; white-space:nowrap; }
+.hbadge.live { background:rgba(34,197,94,.25); border-color:rgba(34,197,94,.5); color:#86efac; }
+.hbadge.warn { background:rgba(245,158,11,.25); border-color:rgba(245,158,11,.5); color:#fde68a; }
+.hbadge.alert { background:rgba(220,38,38,.25); border-color:rgba(220,38,38,.5); color:#fca5a5; }
+
+/* ── TABS ── */
+.tab-bar { background:var(--white); border-bottom:2px solid var(--gray200); overflow-x:auto; position:sticky; top:69px; z-index:99; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.tab-bar-inner { max-width:1440px; margin:0 auto; padding:0 20px; display:flex; }
+.tab { padding:13px 16px; font-size:.8rem; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; color:var(--gray600); white-space:nowrap; transition:all .2s; user-select:none; }
+.tab:hover { color:var(--navy); }
+.tab.active { color:var(--navy); border-bottom-color:#f59e0b; }
+
+/* ── PAGE ── */
+.page { max-width:1440px; margin:0 auto; padding:24px 28px 60px; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── ALERT BANNER ── */
+.alert-banner { background:linear-gradient(90deg,#7f1d1d,#b91c1c); color:white; padding:11px 28px; display:flex; align-items:center; gap:12px; font-size:.8rem; font-weight:600; max-width:100%; }
+.alert-banner-inner { max-width:1440px; margin:0 auto; display:flex; align-items:center; gap:12px; width:100%; }
+
+/* ── SECTION TITLE ── */
+.sec { font-size:.92rem; font-weight:800; color:var(--navy); margin:26px 0 13px; padding-bottom:8px; border-bottom:2px solid var(--gray200); display:flex; align-items:center; gap:10px; }
+.sec:first-child { margin-top:0; }
+.sec-dot { width:9px; height:9px; border-radius:50%; background:#f59e0b; flex-shrink:0; }
+
+/* ── KPI ROW ── */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:13px; margin-bottom:22px; }
+.kpi { background:var(--white); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); border-top:4px solid var(--navy); position:relative; overflow:hidden; }
+.kpi.g { border-top-color:var(--green); }
+.kpi.a { border-top-color:var(--amber); }
+.kpi.b { border-top-color:var(--blue); }
+.kpi.t { border-top-color:var(--teal); }
+.kpi.r { border-top-color:var(--red); }
+.kpi-val { font-size:1.8rem; font-weight:900; color:var(--navy); line-height:1; }
+.kpi-unit { font-size:.72rem; color:var(--gray600); font-weight:600; }
+.kpi-lbl { font-size:.65rem; color:var(--gray400); margin-top:6px; text-transform:uppercase; letter-spacing:.6px; }
+.kpi-trend { font-size:.68rem; margin-top:4px; font-weight:700; }
+.kpi-trend.up { color:var(--green); }
+.kpi-trend.dn { color:var(--red); }
+.kpi-trend.neu { color:var(--amber); }
+
+/* ── GRIDS ── */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:22px; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; margin-bottom:22px; }
+.g21 { display:grid; grid-template-columns:2fr 1fr; gap:18px; margin-bottom:22px; }
+@media(max-width:1000px){ .g2,.g3,.g21 { grid-template-columns:1fr; } }
+
+/* ── CARD ── */
+.card { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+.card-head { padding:12px 16px; background:var(--gray50); border-bottom:1px solid var(--gray200); font-size:.8rem; font-weight:700; color:var(--navy); display:flex; align-items:center; gap:8px; }
+.card-body { padding:15px 16px; }
+.chart-wrap { padding:15px 16px; position:relative; }
+
+/* ── TABLE ── */
+.tbl-wrap { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:18px; }
+.tbl-scroll { overflow-x:auto; max-height:420px; overflow-y:auto; }
+table { width:100%; border-collapse:collapse; font-size:.78rem; }
+th { background:var(--navy); color:white; font-weight:700; font-size:.67rem; text-transform:uppercase; letter-spacing:.5px; padding:10px 13px; text-align:left; position:sticky; top:0; z-index:2; }
+td { padding:9px 13px; border-bottom:1px solid var(--gray100); vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--gray50); }
+.tbl-head { padding:11px 16px; background:var(--gray50); border-bottom:1px solid var(--gray200); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.tbl-title { font-size:.8rem; font-weight:700; color:var(--navy); flex:1; }
+
+/* ── PILLS ── */
+.pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:.66rem; font-weight:700; white-space:nowrap; }
+.p-civ { background:#dbeafe; color:#1e40af; }
+.p-arc { background:#fce7f3; color:#9d174d; }
+.p-ele { background:#fef3c7; color:#92400e; }
+.p-p01 { background:#dcfce7; color:#14532d; }
+.p-p04 { background:#ede9fe; color:#4c1d95; }
+.p-p05 { background:#ffedd5; color:#7c2d12; }
+.p-int { background:#e0f2fe; color:#075985; }
+.p-c09 { background:#dbeafe; color:#1e40af; }
+.p-c11 { background:#fce7f3; color:#9d174d; }
+.p-act { background:#dcfce7; color:#14532d; }
+.p-warn { background:#fef3c7; color:#92400e; }
+.p-crit { background:#fee2e2; color:#991b1b; }
+.p-ok { background:#f0fdf4; color:#15803d; }
+.p-new { background:#ede9fe; color:#6d28d9; }
+
+/* ── FILTER BAR ── */
+.fbar { background:var(--white); border-radius:10px; padding:11px 14px; box-shadow:var(--shadow); margin-bottom:14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.fbar input,.fbar select { padding:7px 11px; border:1.5px solid var(--gray200); border-radius:8px; font-size:.78rem; color:var(--gray800); outline:none; background:var(--white); }
+.fbar input:focus,.fbar select:focus { border-color:var(--blue); }
+.fbar input { flex:1; min-width:160px; }
+.fbar label { font-size:.7rem; font-weight:700; color:var(--gray600); white-space:nowrap; }
+
+/* ── TIMELINE ── */
+.timeline { display:flex; flex-direction:column; gap:0; }
+.tl-item { display:flex; gap:14px; padding:11px 0; border-bottom:1px solid var(--gray100); }
+.tl-item:last-child { border-bottom:none; }
+.tl-left { display:flex; flex-direction:column; align-items:center; width:40px; flex-shrink:0; }
+.tl-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.62rem; font-weight:800; color:white; }
+.tl-dot.done { background:var(--green); }
+.tl-dot.now { background:var(--blue); }
+.tl-dot.next { background:var(--amber); }
+.tl-dot.crit { background:var(--red); }
+.tl-dot.far { background:var(--gray400); }
+.tl-line { width:2px; background:var(--gray200); flex:1; margin-top:4px; }
+.tl-item:last-child .tl-line { display:none; }
+.tl-right { flex:1; padding-top:3px; }
+.tl-date { font-size:.66rem; color:var(--gray400); font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+.tl-title { font-size:.83rem; font-weight:700; color:var(--navy); margin-top:2px; }
+.tl-sub { font-size:.73rem; color:var(--gray600); margin-top:3px; line-height:1.4; }
+
+/* ── PARTY CARDS ── */
+.party-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:13px; margin-bottom:22px; }
+.party { background:var(--white); border-radius:var(--radius); padding:15px 17px; box-shadow:var(--shadow); border-left:5px solid var(--navy); }
+.party.owner { border-left-color:#f59e0b; }
+.party.epc { border-left-color:var(--blue); }
+.party.sub { border-left-color:var(--teal); }
+.party-role { font-size:.63rem; text-transform:uppercase; letter-spacing:.7px; font-weight:700; color:var(--gray400); }
+.party-name { font-size:.92rem; font-weight:800; color:var(--navy); margin-top:4px; }
+.party-detail { font-size:.73rem; color:var(--gray600); margin-top:6px; line-height:1.5; }
+
+/* ── UNIT GRID ── */
+.unit-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:11px; margin-bottom:18px; }
+.unit { background:var(--white); border-radius:10px; padding:13px 15px; box-shadow:var(--shadow); border-top:3px solid var(--teal); }
+.unit-code { font-size:.7rem; font-weight:800; color:var(--teal); text-transform:uppercase; letter-spacing:.5px; }
+.unit-name { font-size:.8rem; font-weight:700; color:var(--navy); margin-top:3px; }
+.unit-desc { font-size:.7rem; color:var(--gray600); margin-top:4px; line-height:1.4; }
+
+/* ── INFO ROW ── */
+.info-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--gray100); font-size:.78rem; }
+.info-row:last-child { border-bottom:none; }
+.info-key { color:var(--gray600); font-weight:600; }
+.info-val { color:var(--navy); font-weight:700; text-align:right; max-width:60%; }
+
+/* ── PROGRESS ── */
+.prog-wrap { margin-bottom:9px; }
+.prog-label { display:flex; justify-content:space-between; font-size:.7rem; color:var(--gray600); margin-bottom:4px; }
+.prog-track { background:var(--gray100); border-radius:6px; height:15px; }
+.prog-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding:0 7px; font-size:.6rem; font-weight:800; color:white; transition:width .8s ease; }
+.prog-fill.civ { background:linear-gradient(90deg,#1d4ed8,#3b82f6); }
+.prog-fill.arc { background:linear-gradient(90deg,#be185d,#ec4899); }
+.prog-fill.ele { background:linear-gradient(90deg,#b45309,#f59e0b); }
+.prog-fill.grn { background:linear-gradient(90deg,#15803d,#22c55e); }
+.prog-fill.red { background:linear-gradient(90deg,#b91c1c,#ef4444); }
+.prog-fill.amb { background:linear-gradient(90deg,#b45309,#f59e0b); }
+
+/* ── ALERT ── */
+.alert { padding:11px 15px; border-radius:10px; font-size:.78rem; margin-bottom:14px; display:flex; gap:10px; align-items:flex-start; line-height:1.5; }
+.alert.warn { background:#fffbeb; border:1.5px solid #fcd34d; color:#92400e; }
+.alert.info { background:#eff6ff; border:1.5px solid #93c5fd; color:#1e40af; }
+.alert.good { background:#f0fdf4; border:1.5px solid #86efac; color:#14532d; }
+.alert.danger { background:#fef2f2; border:1.5px solid #fca5a5; color:#991b1b; }
+
+/* ── NEWS FEED ── */
+.news-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--gray100); }
+.news-item:last-child { border-bottom:none; }
+.news-icon { font-size:1.2rem; flex-shrink:0; }
+.news-body { flex:1; }
+.news-title { font-size:.82rem; font-weight:700; color:var(--navy); }
+.news-date { font-size:.67rem; color:var(--gray400); margin-bottom:3px; font-weight:600; }
+.news-desc { font-size:.75rem; color:var(--gray600); margin-top:3px; line-height:1.4; }
+
+/* ── DPR TABLE ── */
+.dpr-row-new { background:#faf5ff !important; }
+.dpr-row-new td { border-left:3px solid #7c3aed; }
+
+/* ── FOLDER TREE ── */
+.ftree { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; }
+.ftree-head { padding:12px 16px; background:var(--gray50); border-bottom:1px solid var(--gray200); display:flex; align-items:center; gap:10px; cursor:pointer; }
+.ftree-icon { font-size:.95rem; }
+.ftree-name { font-size:.85rem; font-weight:700; color:var(--navy); flex:1; }
+.ftree-meta { font-size:.68rem; color:var(--gray400); }
+.ftree-body { padding:11px 16px; }
+.fsub { display:flex; align-items:flex-start; gap:9px; padding:6px 0; border-bottom:1px solid var(--gray100); font-size:.76rem; }
+.fsub:last-child { border-bottom:none; }
+.fsub-icon { color:var(--gray400); flex-shrink:0; margin-top:1px; }
+.fsub-name { flex:1; color:var(--gray800); }
+.fsub-tag { font-size:.63rem; color:var(--gray400); }
+
+/* ── SOURCES ── */
+.sources { background:var(--gray800); color:var(--gray400); font-size:.7rem; padding:18px 28px; margin-top:0; line-height:1.8; }
+.sources a { color:#60a5fa; text-decoration:none; }
+.sources a:hover { text-decoration:underline; }
+
+/* ── PRINT ── */
+@media print { .site-header,.tab-bar,.fbar { display:none; } .panel { display:block !important; page-break-before:always; } }
+
+/* ── NO PRINT SHARE BTN ── */
+.share-bar { background:var(--white); border-bottom:1px solid var(--gray200); padding:8px 28px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.share-bar-inner { max-width:1440px; margin:0 auto; display:flex; align-items:center; gap:12px; width:100%; }
+.btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:8px; font-size:.75rem; font-weight:700; cursor:pointer; border:none; text-decoration:none; transition:all .15s; }
+.btn-primary { background:var(--blue); color:white; }
+.btn-primary:hover { background:#1d4ed8; }
+.btn-ghost { background:var(--gray100); color:var(--gray800); }
+.btn-ghost:hover { background:var(--gray200); }
+.last-updated { margin-left:auto; font-size:.7rem; color:var(--gray400); }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="site-header">
+  <div class="header-inner">
+    <div class="header-logo">🏭</div>
+    <div class="header-text">
+      <h1>Hassi Messaoud Refinery — Project Dashboard</h1>
+      <div class="sub">Sinohydro Corporation Limited (SCL) · Subcontracts C09-K (Civil) &amp; C11-K (Buildings) · Haoud El Hamra, Algeria</div>
+    </div>
+    <div class="header-badges">
+      <span class="hbadge live">● LIVE</span>
+      <span class="hbadge">📅 6 Apr 2026</span>
+      <span class="hbadge warn">⚠️ Delay: 19.8%</span>
+      <span class="hbadge">DPR-115 Latest</span>
+      <span class="hbadge">TRA-00142 Latest</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELAY ALERT BANNER ── -->
+<div class="alert-banner">
+  <div class="alert-banner-inner">
+    <span>🚨</span>
+    <span><strong>ACTIVE CLAIM:</strong> Delay Justification Report filed April 2026 — 19.8% delay documented across both C09-K &amp; C11-K subcontracts. Formal submission to UTE TR-SE pending review.</span>
+    <span style="margin-left:auto;opacity:.7;font-size:.68rem;">Filed: 5 Apr 2026</span>
+  </div>
+</div>
+
+<!-- ── SHARE BAR ── -->
+<div class="share-bar">
+  <div class="share-bar-inner">
+    <span style="font-size:.72rem;color:var(--gray600);font-weight:700;">📤 Share this dashboard:</span>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+    <button class="btn btn-ghost" onclick="copyLink()">🔗 Copy Link</button>
+    <button class="btn btn-ghost" onclick="window.location.reload()">🔄 Refresh</button>
+    <span class="last-updated">Last updated: <strong>Monday 6 April 2026 · 10:00 AM</strong></span>
+  </div>
+</div>
+
+<!-- ── TAB BAR ── -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <div class="tab active" onclick="show('overview',this)">📊 Overview</div>
+    <div class="tab" onclick="show('cpm',this)">📅 CPM Monitor</div>
+    <div class="tab" onclick="show('updates',this)">🆕 Latest Updates</div>
+    <div class="tab" onclick="show('schedule',this)">🏁 Milestones</div>
+    <div class="tab" onclick="show('transmittals',this)">📬 Transmittals</div>
+    <div class="tab" onclick="show('dpr',this)">📋 Daily Highlight</div>
+    <div class="tab" onclick="show('commercial',this)">💰 Commercial</div>
+    <div class="tab" onclick="show('documents',this)">📁 Documents</div>
+    <div class="tab" onclick="show('refinery',this)">⚗️ Refinery Tech</div>
+    <div class="tab" onclick="show('news',this)">📰 Recent News</div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ═══════════════════ TAB 1: OVERVIEW ═══════════════════ -->
+<!-- ═══════════════════ CPM MONITOR TAB (inserted before overview) ═══════════════════ -->
+<div id="tab-cpm" class="panel">
+
+  <!-- ── BASELINE NOTE ── -->
+  <div class="alert info" style="margin-bottom:18px;">
+    📂 <div><strong>Baseline Source:</strong> <em>03- PDF of Detailed L4 Activities-1.pdf</em> (Civil, 209 pp, added 5 Apr 2026) + <em>03- PDF of Detailed L4 Activities.pdf</em> (Buildings, 59 pp, added 5 Apr 2026). Both files extracted from Primavera P6 XER baselines. <strong>CPM schedules last updated: Sep 2025</strong> — 7 months stale. The 19.8% delay claim (Apr 2026) is NOT yet reflected. Dates below are from the original approved baseline.</div>
+  </div>
+
+  <!-- ── CPM KPIs ── -->
+  <div class="kpi-grid">
+    <div class="kpi r">
+      <div class="kpi-val">TF=<span style="font-size:1.4rem;">0</span></div>
+      <div class="kpi-lbl">Critical Path Float</div>
+      <div class="kpi-trend dn">CMS-04 Interconnecting → Feb 2027</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">19.8<span class="kpi-unit">%</span></div>
+      <div class="kpi-lbl">Delay vs Baseline</div>
+      <div class="kpi-trend dn">Filed Apr 2026 — both contracts</div>
+    </div>
+    <div class="kpi b">
+      <div class="kpi-val">12</div>
+      <div class="kpi-lbl">Active Activities Today</div>
+      <div class="kpi-trend neu">Civil (8) + Buildings (4)</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-val">3</div>
+      <div class="kpi-lbl">Starting This Week</div>
+      <div class="kpi-trend neu">Apr 6–12, 2026</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">1</div>
+      <div class="kpi-lbl">Completing TODAY</div>
+      <div class="kpi-trend dn">SS.100 Fdn QA Certificate</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">209 <span class="kpi-unit">pp</span></div>
+      <div class="kpi-lbl">Civil L4 Schedule (Pages)</div>
+      <div class="kpi-trend neu">C09-K baseline + 5 Apr 2026</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">59 <span class="kpi-unit">pp</span></div>
+      <div class="kpi-lbl">Buildings L4 Schedule (Pages)</div>
+      <div class="kpi-trend neu">C11-K baseline + 5 Apr 2026</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">~10 <span class="kpi-unit">mo</span></div>
+      <div class="kpi-lbl">To Next Critical Milestone</div>
+      <div class="kpi-trend dn">CMS-04 → Feb 2027</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       DELAY FROM BASELINE — SCHEDULE VARIANCE ANALYSIS
+       Baseline: Sep 2025 CPM (L4 PDFs added 5 Apr 2026)
+       Delay claim: 19.8% filed Apr 2026
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="sec" id="baseline-delay-sec" style="margin-top:8px;">
+    <span class="sec-dot" style="background:#dc2626;"></span>
+    📊 Delay from Baseline — Schedule Variance Analysis
+    <span style="font-size:.68rem;font-weight:500;color:#64748b;margin-left:8px;">Updated: 6 Apr 2026 | Baseline: Sep 2025 CPM | Delay: 19.8%</span>
+  </div>
+
+  <!-- Delay summary KPI strip -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(158px,1fr));margin-bottom:18px;">
+    <div class="kpi r">
+      <div class="kpi-val">50 <span class="kpi-unit">days</span></div>
+      <div class="kpi-lbl">Camp Milestone Overdue</div>
+      <div class="kpi-trend dn">↑ Was due 15-Feb-26 — TF=0</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">~127 <span class="kpi-unit">days</span></div>
+      <div class="kpi-lbl">Projected CMS Milestone Slip</div>
+      <div class="kpi-trend dn">19.8% × 641-day programme</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">19.8<span class="kpi-unit">%</span></div>
+      <div class="kpi-lbl">Programme Delay vs Baseline</div>
+      <div class="kpi-trend dn">Filed Apr 2026 — C09-K + C11-K</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">9</div>
+      <div class="kpi-lbl">CMS Milestones at Risk</div>
+      <div class="kpi-trend dn">All TF=0 — critical path affected</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">~4.2 <span class="kpi-unit">mo</span></div>
+      <div class="kpi-lbl">CMS-04 Projected Slip</div>
+      <div class="kpi-trend dn">Feb-27 → Jul-27 (most critical)</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">$1.92 <span class="kpi-unit">M</span></div>
+      <div class="kpi-lbl">Max LD Exposure (Both Contracts)</div>
+      <div class="kpi-trend dn">1% cap — C09-K $1.25M + C11-K $0.67M</div>
+    </div>
+  </div>
+
+  <!-- Delay chart: Baseline vs Projected horizontal bar -->
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head" style="background:#fef2f2;color:#991b1b;">
+      📊 Milestone Schedule Variance — Baseline vs Projected (Days from 6 Apr 2026)
+      <span style="margin-left:auto;font-size:.67rem;font-weight:500;color:#b91c1c;">🔵 Baseline &nbsp;|&nbsp; 🔴 Projected (19.8% delay applied)</span>
+    </div>
+    <div class="chart-wrap" style="height:340px;">
+      <canvas id="delayChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Delay register table -->
+  <div class="tbl-wrap" style="margin-bottom:22px;">
+    <div class="tbl-head">
+      <div class="tbl-title">📋 Delay Register — Baseline vs Projected Completion — All CMS Milestones</div>
+      <span style="font-size:.68rem;color:#64748b;">Projected dates apply 19.8% delay to remaining programme duration from today (6 Apr 2026)</span>
+    </div>
+    <div class="tbl-scroll">
+      <table id="delayReg">
+        <thead>
+          <tr>
+            <th style="min-width:210px;">Milestone / Activity</th>
+            <th>Contract</th>
+            <th>Baseline Finish</th>
+            <th>Projected Finish</th>
+            <th>Slip (Days)</th>
+            <th>Slip (%)</th>
+            <th style="min-width:180px;">Variance</th>
+            <th>TF</th>
+            <th>LD Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- ── OVERDUE ─────────────────────────────────────────────── -->
+          <tr style="background:#fef2f2;">
+            <td>
+              <strong>Camp Milestone</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Buildings — SS-100 Camp completion — TF=0</span>
+            </td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><strong>15-Feb-2026</strong></td>
+            <td>
+              <strong style="color:#dc2626;">🔴 OVERDUE</strong><br>
+              <span style="font-size:.68rem;color:#dc2626;">Est. ≥ May 2026</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">+50 days <span style="font-size:.62rem;">(min.)</span></td>
+            <td style="color:#dc2626;font-weight:700;">—</td>
+            <td>
+              <div style="background:#fee2e2;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:#dc2626;border-radius:4px;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 OVERDUE — 50 days past baseline</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── NEAR-CRITICAL — PR-B ────────────────────────────────── -->
+          <tr style="background:#fffbeb;">
+            <td>
+              <strong>PR-B Piperack — Excavation (TF=2)</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Interconnecting Area — near-critical</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td>11-Apr-2026</td>
+            <td style="color:#d97706;font-weight:700;">~13-Apr-2026</td>
+            <td style="color:#d97706;font-weight:700;">+2 days</td>
+            <td style="color:#d97706;font-weight:700;">~1.4%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:97%;background:#16a34a;border-radius:4px;"></div>
+                <div style="position:absolute;right:0;top:0;height:100%;width:3%;background:#d97706;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#d97706;font-weight:700;">⚠️ NEAR-CRITICAL TF=2 — monitor daily</span>
+            </td>
+            <td style="color:#d97706;font-weight:800;">2</td>
+            <td><span class="pill p-warn">MED</span></td>
+          </tr>
+
+          <!-- ── CMS-04 ────────────────────────────────────────────────── -->
+          <tr style="background:#fef2f2;">
+            <td>
+              <strong>CMS-04 — Interconnecting Piperack MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Civil — Areas 0200 / 0210 — MOST CRITICAL</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><strong>28-Feb-2027</strong></td>
+            <td><strong style="color:#dc2626;">~05-Jul-2027</strong></td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:72%;background:#2563eb;border-radius:4px;"></div>
+                <div style="position:absolute;left:72%;top:0;height:100%;width:28%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 CRITICAL PATH — 127-day slip (4.2 months)</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── PKG-04 Civil ─────────────────────────────────────────── -->
+          <tr>
+            <td>
+              <strong>CMS-02 — PKG-04 Civil MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Units 200 &amp; 220</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td>31-Mar-2027</td>
+            <td style="color:#dc2626;font-weight:700;">~05-Aug-2027</td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:74%;background:#2563eb;border-radius:4px;"></div>
+                <div style="position:absolute;left:74%;top:0;height:100%;width:26%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── PKG-05 Civil ─────────────────────────────────────────── -->
+          <tr style="background:#f8fafc;">
+            <td>
+              <strong>CMS-03 — PKG-05 Civil MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Unit 550</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td>31-Mar-2027</td>
+            <td style="color:#dc2626;font-weight:700;">~05-Aug-2027</td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:74%;background:#2563eb;border-radius:4px;"></div>
+                <div style="position:absolute;left:74%;top:0;height:100%;width:26%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── PKG-01 Civil ─────────────────────────────────────────── -->
+          <tr>
+            <td>
+              <strong>CMS-01 — PKG-01 Civil MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Excl. Units 150/190/585</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td>29-Apr-2027</td>
+            <td style="color:#dc2626;font-weight:700;">~03-Sep-2027</td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:75%;background:#2563eb;border-radius:4px;"></div>
+                <div style="position:absolute;left:75%;top:0;height:100%;width:25%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── Civil Final MCC ─────────────────────────────────────── -->
+          <tr style="background:#fef2f2;">
+            <td>
+              <strong>CMS-05 — Civil Final MCC (All PKG)</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Complete Civil Works — Contract Completion</span>
+            </td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><strong>30-Nov-2027</strong></td>
+            <td><strong style="color:#dc2626;">~05-Apr-2028</strong></td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:82%;background:#2563eb;border-radius:4px;"></div>
+                <div style="position:absolute;left:82%;top:0;height:100%;width:18%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip — Max LD Cap: $1.25M</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit" style="font-size:.6rem;">HIGH — LD CAP</span></td>
+          </tr>
+
+          <!-- ── Buildings PKG-04 ────────────────────────────────────── -->
+          <tr style="background:#faf5ff;">
+            <td>
+              <strong>B-CMS-02 — PKG-04 Buildings MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">SS-200 &amp; RIB-200</span>
+            </td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td>28-Feb-2027</td>
+            <td style="color:#dc2626;font-weight:700;">~05-Jul-2027</td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:72%;background:#ec4899;border-radius:4px;"></div>
+                <div style="position:absolute;left:72%;top:0;height:100%;width:28%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── Buildings PKG-01 ────────────────────────────────────── -->
+          <tr style="background:#faf5ff;">
+            <td>
+              <strong>B-CMS-01 — PKG-01 Buildings MCC</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">SS-100, RIB-100, RIB-190</span>
+            </td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td>31-Mar-2027</td>
+            <td style="color:#dc2626;font-weight:700;">~05-Aug-2027</td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:74%;background:#ec4899;border-radius:4px;"></div>
+                <div style="position:absolute;left:74%;top:0;height:100%;width:26%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit">HIGH</span></td>
+          </tr>
+
+          <!-- ── Buildings Final MCC ─────────────────────────────────── -->
+          <tr style="background:#fef2f2;">
+            <td>
+              <strong>B-CMS-04 — Buildings Final MCC (All PKG 01+04+05)</strong><br>
+              <span style="font-size:.7rem;color:#64748b;">Complete Buildings Works — Contract Completion</span>
+            </td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><strong>31-Oct-2027</strong></td>
+            <td><strong style="color:#dc2626;">~05-Mar-2028</strong></td>
+            <td style="color:#dc2626;font-weight:800;">+127 days</td>
+            <td style="color:#dc2626;font-weight:700;">19.8%</td>
+            <td>
+              <div style="background:#f1f5f9;border-radius:4px;height:14px;position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:81%;background:#ec4899;border-radius:4px;"></div>
+                <div style="position:absolute;left:81%;top:0;height:100%;width:19%;background:#dc2626;"></div>
+              </div>
+              <span style="font-size:.63rem;color:#dc2626;font-weight:700;">🔴 127-day slip — Max LD Cap: $0.67M</span>
+            </td>
+            <td style="color:#dc2626;font-weight:800;">0</td>
+            <td><span class="pill p-crit" style="font-size:.6rem;">HIGH — LD CAP</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── LD Exposure note ── -->
+  <div class="alert info" style="margin-bottom:22px;background:linear-gradient(90deg,#7f1d1d11,#fef2f2);border:1px solid #fca5a5;border-radius:10px;padding:12px 16px;font-size:.78rem;color:#7f1d1d;">
+    <strong>⚖️ Liquidated Damages (LD) Exposure:</strong> &nbsp;0.5%/week after 4-week grace period, capped at 1% of contract value. At 127-day (18-week) slip: LD would fully accrue after ~14 additional weeks beyond grace period. &nbsp;<strong>Max exposure: C09-K $1.25M + C11-K $0.67M = $1.92M total</strong> — subject to SCL's entitlement claim (19.8% delay attributed to Contractor-caused events).
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+
+  <!-- ── TODAY'S ACTIVITY STATUS ── -->
+  <div class="sec"><span class="sec-dot"></span>📅 Today — Monday 6 April 2026 — Activity Status</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head" style="background:#fef2f2;color:#991b1b;">🔴 COMPLETING TODAY (Early Finish = 6 Apr)</div>
+      <div class="card-body">
+        <div class="news-item">
+          <div class="news-icon">✅</div>
+          <div class="news-body">
+            <div class="news-date">C11-K · Buildings · Unit 09 (OPB.100 Operator Building)</div>
+            <div class="news-title">C090BUFOOB100030.05 — OPB.100 Concrete Casting for Foundations</div>
+            <div class="news-desc">EF: 06-Apr-26 · Duration: 2d · TF: 117 · Package: PKG-01 Buildings<br>Concrete casting for OPB.100 (Operator Building) foundations is completing today. QA/QC sign-off and curing period to follow before coating works commence.</div>
+            <div style="margin-top:5px;"><span class="pill p-c11">C11-K</span> <span class="pill p-p01">PKG 01</span> <span class="pill p-act">Completing Today</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:#eff6ff;color:#1e40af;">⭐ STARTING TOMORROW (7 Apr) — KEY ACTIVITY</div>
+      <div class="card-body">
+        <div class="news-item">
+          <div class="news-icon">🏗️</div>
+          <div class="news-body">
+            <div class="news-date">C09-K · Civil · Unit 06 · 585-PR-B Piperack</div>
+            <div class="news-title">C060CIPR585PRB10.03 — Base Formworks — Piperack PR-B</div>
+            <div class="news-desc">ES: 07-Apr-26 · EF: 24-May-26 · Duration: 41d · TF: 25<br>Base formworks for PR-B Piperack begin tomorrow. Follows on from the Excavation activity (TF=2 — near-critical). Sequence: Formwork → Reinforcement (TF=25 window) → Concrete Pour. Monitor this chain carefully given the parent excavation's near-critical float.</div>
+            <div style="margin-top:5px;"><span class="pill p-c09">C09-K</span> <span class="pill p-int">Unit 06 PR-B</span> <span class="pill p-warn">Starting Tomorrow</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CURRENTLY ACTIVE ACTIVITIES ── -->
+  <div class="sec"><span class="sec-dot"></span>🔵 Currently Active Activities — As of 6 April 2026</div>
+
+  <div class="alert warn" style="margin-bottom:14px;">⚠️ Dates below are from the <strong>approved baseline (Sep 2025)</strong>. Actual progress must be validated against DPR site reports. With 19.8% delay claimed, actual status may differ from these planned dates.</div>
+
+  <div class="fbar">
+    <label>Search:</label>
+    <input type="text" placeholder="Filter activities…" oninput="filterTbl('cpmActive',this.value)">
+    <label>Contract:</label>
+    <select onchange="filterCol('cpmActive',1,this.value)">
+      <option value="">All</option>
+      <option value="C09-K">C09-K Civil</option>
+      <option value="C11-K">C11-K Buildings</option>
+    </select>
+    <label>Float:</label>
+    <select onchange="filterCPMFloat(this.value)">
+      <option value="">All</option>
+      <option value="critical">Critical (TF=0)</option>
+      <option value="near">Near-Critical (TF≤10)</option>
+      <option value="normal">Normal (TF&gt;10)</option>
+    </select>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-scroll" style="max-height:500px;">
+      <table id="cpmActive">
+        <thead>
+          <tr>
+            <th>Activity ID</th>
+            <th>Contract</th>
+            <th>Package / Area</th>
+            <th>Activity Description</th>
+            <th>Early Start</th>
+            <th>Early Finish</th>
+            <th>Dur</th>
+            <th>TF</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ══ C09-K CIVIL ══ -->
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.06</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-A</span></td>
+            <td>Pedestal Formwork — Piperack PR-A</td>
+            <td>18-Feb-26</td>
+            <td style="font-weight:700;color:#d97706;">09-Apr-26</td>
+            <td>40d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">72</span></td>
+            <td><span class="pill p-act">🔵 Active → ends Apr 9</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.07</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-A</span></td>
+            <td>Anchor Bolts — Piperack PR-A</td>
+            <td>15-Mar-26</td>
+            <td>03-May-26</td>
+            <td>40d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">72</span></td>
+            <td><span class="pill p-act">🔵 Active</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.08</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-A</span></td>
+            <td>Pedestal Concrete Casting — Piperack PR-A</td>
+            <td>01-Apr-26</td>
+            <td>17-May-26</td>
+            <td>40d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">72</span></td>
+            <td><span class="pill p-act">🔵 Active (just started)</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRB10.01</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-B</span></td>
+            <td>Excavation for Pipe Racks — Piperack PR-B</td>
+            <td>19-Feb-26</td>
+            <td style="font-weight:700;color:#d97706;">11-Apr-26</td>
+            <td>40d</td>
+            <td><span class="pill p-warn">2</span></td>
+            <td><span class="pill p-warn">⚠️ Active — TF=2 NEAR CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRB10.02</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-B</span></td>
+            <td>Lean Concrete Works — Piperack PR-B</td>
+            <td>16-Mar-26</td>
+            <td>28-Apr-26</td>
+            <td>35d</td>
+            <td><span class="pill" style="background:#fef3c7;color:#92400e;">22</span></td>
+            <td><span class="pill p-act">🔵 Active</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.01</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Excavation Work — Analyzer Shelter Foundation</td>
+            <td>09-Mar-26</td>
+            <td style="font-weight:700;color:#d97706;">08-Apr-26</td>
+            <td>24d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">78</span></td>
+            <td><span class="pill p-act">🔵 Active → ends Apr 8</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.02</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Lean Concrete Works — Analyzer Shelter</td>
+            <td>18-Mar-26</td>
+            <td>13-Apr-26</td>
+            <td>20d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">78</span></td>
+            <td><span class="pill p-act">🔵 Active</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.03</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Base Formworks — Analyzer Shelter</td>
+            <td>31-Mar-26</td>
+            <td>27-Apr-26</td>
+            <td>24d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">78</span></td>
+            <td><span class="pill p-act">🔵 Active</span></td>
+          </tr>
+          <!-- Pipe Track Sleepers -->
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPT10000010</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · Pipe Track</span></td>
+            <td>Sleepers Execution (Fabrication + Installation)</td>
+            <td>04-Mar-26</td>
+            <td>15-Jun-26</td>
+            <td>86d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">117</span></td>
+            <td><span class="pill p-act">🔵 Active</span></td>
+          </tr>
+          <!-- ══ C11-K BUILDINGS ══ -->
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOS1000120.07</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · SS-100</span></td>
+            <td>SS.100 Foundation QA/QA Certificate</td>
+            <td>04-Apr-26</td>
+            <td style="font-weight:700;color:#16a34a;">05-Apr-26 ✅</td>
+            <td>2d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">56</span></td>
+            <td><span class="pill p-act">✅ COMPLETING TODAY</span></td>
+          </tr>
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOS1000020.04</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · TRANF.100</span></td>
+            <td>TRANF.100 Foundation Formworks</td>
+            <td>06-Apr-26</td>
+            <td>12-Apr-26</td>
+            <td>6d</td>
+            <td><span class="pill" style="background:#fef3c7;color:#92400e;">45</span></td>
+            <td><span class="pill p-act">🔵 Active (started today)</span></td>
+          </tr>
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOOB100030.05</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · OPB.100</span></td>
+            <td>OPB.100 Concrete Casting for Foundations</td>
+            <td>05-Apr-26</td>
+            <td>06-Apr-26</td>
+            <td>2d</td>
+            <td><span class="pill" style="background:#dcfce7;color:#15803d;">117</span></td>
+            <td><span class="pill p-act">✅ COMPLETING TODAY</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 14-DAY LOOKAHEAD ── -->
+  <div class="sec"><span class="sec-dot"></span>🔭 14-Day Lookahead — 7 April to 20 April 2026</div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll" style="max-height:520px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Activity ID</th>
+            <th>Contract</th>
+            <th>Area / Unit</th>
+            <th>Activity Description</th>
+            <th>Planned Start</th>
+            <th>Planned Finish</th>
+            <th>Dur</th>
+            <th>TF</th>
+            <th>Watch</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Started Apr 6 (now Active) -->
+          <tr style="background:#f0fdf4;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUCSS1000120.01</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · SS-100</span></td>
+            <td><strong>GF Reinforcement of Columns/Walls</strong> — Concrete Structure Phase ⭐ Active</td>
+            <td><strong style="color:#16a34a;">06-Apr-26</strong></td>
+            <td>14-Apr-26</td>
+            <td>8d</td>
+            <td>56</td>
+            <td><span class="pill p-act">🔵 ACTIVE TODAY</span></td>
+          </tr>
+          <tr style="background:#f0fdf4;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOS1000020.04</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · TRANF.100</span></td>
+            <td>Foundation Formworks — Transf. Yard</td>
+            <td><strong style="color:#16a34a;">06-Apr-26</strong></td>
+            <td>12-Apr-26</td>
+            <td>6d</td>
+            <td>45</td>
+            <td><span class="pill p-act">🔵 ACTIVE TODAY</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRB10.03</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-B</span></td>
+            <td>Base Formworks — Piperack PR-B</td>
+            <td><strong style="color:#d97706;">07-Apr-26</strong></td>
+            <td>24-May-26</td>
+            <td>41d</td>
+            <td>25</td>
+            <td><span class="pill p-warn">Monitor TF=25</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.04</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Reinforcement — Analyzer Shelter Foundation</td>
+            <td>09-Apr-26</td>
+            <td>07-May-26</td>
+            <td>25d</td>
+            <td>78</td>
+            <td><span class="pill p-ok">Normal</span></td>
+          </tr>
+          <!-- Finishing in this window -->
+          <tr style="background:#fef2f2;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.06</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-A</span></td>
+            <td>Pedestal Formwork — Piperack PR-A</td>
+            <td>18-Feb-26</td>
+            <td><strong style="color:#d97706;">09-Apr-26 ⏱</strong></td>
+            <td>40d</td>
+            <td>72</td>
+            <td><span class="pill p-warn">Finishing Apr 9</span></td>
+          </tr>
+          <tr style="background:#fef2f2;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.01</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Excavation Work — Analyzer Shelter</td>
+            <td>09-Mar-26</td>
+            <td><strong style="color:#d97706;">08-Apr-26 ⏱</strong></td>
+            <td>24d</td>
+            <td>78</td>
+            <td><span class="pill p-warn">Finishing Apr 8</span></td>
+          </tr>
+          <tr style="background:#fef2f2;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRB10.01</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-PR-B</span></td>
+            <td>Excavation — Piperack PR-B ⚠️ TF=2</td>
+            <td>19-Feb-26</td>
+            <td><strong style="color:#dc2626;">11-Apr-26 🔴</strong></td>
+            <td>40d</td>
+            <td><strong style="color:#dc2626;">2</strong></td>
+            <td><span class="pill p-crit">NEAR-CRITICAL</span></td>
+          </tr>
+          <tr>
+            <td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.02</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585-Analyzer Shelter</span></td>
+            <td>Lean Concrete Works — Analyzer Shelter</td>
+            <td>18-Mar-26</td>
+            <td>13-Apr-26</td>
+            <td>20d</td>
+            <td>78</td>
+            <td><span class="pill p-ok">Normal</span></td>
+          </tr>
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUCSS1000120.02</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · SS-100</span></td>
+            <td>SS.100 GF Formwork of Columns/Walls</td>
+            <td>15-Apr-26</td>
+            <td>21-Apr-26</td>
+            <td>6d</td>
+            <td>56</td>
+            <td><span class="pill p-ok">Upcoming</span></td>
+          </tr>
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOOB100030.06</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · OPB.100</span></td>
+            <td>OPB.100 Coating of Foundation</td>
+            <td>09-Apr-26</td>
+            <td>14-Apr-26</td>
+            <td>5d</td>
+            <td>117</td>
+            <td><span class="pill p-ok">Normal</span></td>
+          </tr>
+          <tr style="background:#faf5ff;">
+            <td style="font-size:.7rem;font-family:monospace;">C090BUFOS1000020.05</td>
+            <td><span class="pill p-c11">C11-K</span></td>
+            <td><span class="pill p-p01">Unit 09 · TRANF.100</span></td>
+            <td>TRANF.100 Concrete Casting for Foundations</td>
+            <td>14-Apr-26</td>
+            <td>15-Apr-26</td>
+            <td>2d</td>
+            <td>45</td>
+            <td><span class="pill p-ok">Upcoming</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIRE585P1AB0</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585 Pumps P-001A/B</span></td>
+            <td>P-001A/B Pump Foundation — Excavation to QA</td>
+            <td><strong style="color:#d97706;">13-Apr-26</strong></td>
+            <td>28-Apr-26</td>
+            <td>14d</td>
+            <td>23</td>
+            <td><span class="pill p-warn">Monitor TF=23</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIRE585P2000</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585 Pump P-002</span></td>
+            <td>P-002 Pump Foundation — Excavation to QA</td>
+            <td><strong style="color:#d97706;">13-Apr-26</strong></td>
+            <td>28-Apr-26</td>
+            <td>14d</td>
+            <td>111</td>
+            <td><span class="pill p-ok">Normal</span></td>
+          </tr>
+          <tr style="background:#fffbeb;">
+            <td style="font-size:.7rem;font-family:monospace;">C060CIRE585P3000</td>
+            <td><span class="pill p-c09">C09-K</span></td>
+            <td><span class="pill p-int">Unit 06 · 585 Pump P-003</span></td>
+            <td>P-003 Pump Foundation — Excavation to QA</td>
+            <td><strong style="color:#d97706;">13-Apr-26</strong></td>
+            <td>28-Apr-26</td>
+            <td>14d</td>
+            <td>111</td>
+            <td><span class="pill p-ok">Normal</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 4-WEEK LOOKAHEAD ── -->
+  <div class="sec"><span class="sec-dot"></span>📆 4-Week Lookahead — April to Early May 2026 (Key Activities)</div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll" style="max-height:420px;">
+      <table>
+        <thead>
+          <tr><th>Activity ID</th><th>Contract</th><th>Area</th><th>Activity</th><th>Planned Start</th><th>Planned Finish</th><th>TF</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C090BUCSS1000120.03</td><td><span class="pill p-c11">C11-K</span></td><td>Unit 09 SS-100</td><td>GF Concrete Casting for Columns &amp; Walls</td><td>23-Apr-26</td><td>25-Apr-26</td><td>56</td><td><span class="pill p-c11">Buildings</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C090BUCSS1000120.04</td><td><span class="pill p-c11">C11-K</span></td><td>Unit 09 SS-100</td><td>Backfilling, Compaction &amp; Leveling</td><td>01-Jun-26</td><td>06-Jun-26</td><td>45</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.09</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 PR-A</td><td>Backfilling &amp; Compaction — PR-A Piperack</td><td>20-Apr-26</td><td>04-Jun-26</td><td>72</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRA10.10</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 PR-A</td><td>QA/QC Certificate — PR-A Piperack Complete</td><td>29-Apr-26</td><td>14-Jun-26</td><td>72</td><td><span class="pill p-ok">Completion</span></td></tr>
+          <tr style="background:#fffbeb;"><td style="font-size:.7rem;font-family:monospace;">C060CIPR585PRB10.04</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 PR-B</td><td>Reinforcement — PR-B Piperack</td><td>26-Apr-26</td><td>14-Jun-26</td><td>25</td><td><span class="pill p-warn">Monitor</span></td></tr>
+          <tr style="background:#faf5ff;"><td style="font-size:.7rem;font-family:monospace;">C090BUFOOB100030.07</td><td><span class="pill p-c11">C11-K</span></td><td>Unit 09 OPB.100</td><td>OPB.100 Foundation QA/QC Certificate</td><td>15-Apr-26</td><td>20-Apr-26</td><td>117</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr style="background:#faf5ff;"><td style="font-size:.7rem;font-family:monospace;">C090BUFOS1000020.06</td><td><span class="pill p-c11">C11-K</span></td><td>Unit 09 TRANF.100</td><td>Coating of Foundation — Transf. Yard</td><td>19-Apr-26</td><td>23-Apr-26</td><td>45</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C060CIST585AS010.05</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 Analyzer Shelter</td><td>Base Concrete Casting — Analyzer Shelter</td><td>19-Apr-26</td><td>17-May-26</td><td>78</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C060CIVE585D1030</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 · 585-D-001</td><td>Vertical Drum D-001 Foundation — Base Formworks</td><td>16-May-26</td><td>13-Jun-26</td><td>42</td><td><span class="pill p-ok">Normal</span></td></tr>
+          <tr><td style="font-size:.7rem;font-family:monospace;">C060CIVE585D5040</td><td><span class="pill p-c09">C09-K</span></td><td>Unit 06 · 585-D-005</td><td>Vertical Drum D-005 Foundation — Base Formworks</td><td>07-Jul-26</td><td>01-Jul-26</td><td>64</td><td><span class="pill p-ok">Future</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── CRITICAL PATH ── -->
+  <div class="sec"><span class="sec-dot"></span>🔴 Critical Path — TF = 0 Activities &amp; Near-Critical Flags</div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-head" style="background:#fef2f2;color:#991b1b;">🔴 Critical &amp; Near-Critical Activities</div>
+      <div class="card-body">
+        <div class="tbl-wrap" style="margin:0;box-shadow:none;">
+          <table>
+            <thead><tr><th>Activity ID</th><th>Description</th><th>EF</th><th>TF</th><th>Flag</th></tr></thead>
+            <tbody>
+              <tr style="background:#fef2f2;"><td style="font-size:.68rem;">C-MSCR-PKGIN-CMS-04</td><td>Civil Interconnecting — Subcontract Mechanical Completion</td><td>28-Feb-27</td><td><strong style="color:#dc2626;">0</strong></td><td><span class="pill p-crit">CRITICAL PATH</span></td></tr>
+              <tr style="background:#fef2f2;"><td style="font-size:.68rem;">C-MSCR-PKGSF-CMS-05</td><td>Civil MCC PKG01+04+05+Interconnecting — Final</td><td>30-Nov-27</td><td><strong style="color:#dc2626;">0</strong></td><td><span class="pill p-crit">CRITICAL PATH</span></td></tr>
+              <tr style="background:#fef2f2;"><td style="font-size:.68rem;">B000MSGNPK1000030</td><td>Buildings PKG-1 Duration (Start → 31-Oct-27)</td><td>31-Oct-27</td><td><strong style="color:#dc2626;">0</strong></td><td><span class="pill p-crit">CRITICAL PATH</span></td></tr>
+              <tr style="background:#fef2f2;"><td style="font-size:.68rem;">B000MSGNPK4000030</td><td>Buildings PKG-4 Duration (Start → 31-Oct-27)</td><td>31-Oct-27</td><td><strong style="color:#dc2626;">0</strong></td><td><span class="pill p-crit">CRITICAL PATH</span></td></tr>
+              <tr style="background:#fef2f2;"><td style="font-size:.68rem;">I000MSGNMON180</td><td>Buildings Target Milestone: CAMP</td><td>15-Feb-26</td><td><strong style="color:#dc2626;">0</strong></td><td><span class="pill p-crit">OVERDUE</span></td></tr>
+              <tr style="background:#fffbeb;"><td style="font-size:.68rem;">C060CIPR585PRB10.01</td><td>PR-B Excavation (ends 11-Apr-26)</td><td>11-Apr-26</td><td><strong style="color:#d97706;">2</strong></td><td><span class="pill p-warn">NEAR-CRITICAL</span></td></tr>
+              <tr style="background:#fffbeb;"><td style="font-size:.68rem;">C000TFGNPK1000020</td><td>Mobilization for PKG-01 after KOM (Civil)</td><td>25-Dec-25</td><td><strong style="color:#16a34a;">0</strong></td><td><span class="pill p-act">Done ✓</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head">⚠️ Monitoring Target Milestones — Civil (C09-K)</div>
+        <div class="card-body">
+          <div class="info-row"><div class="info-key">Mobilization</div><div class="info-val">EF: 14-Apr-26 · TF: 322 ✅ OK</div></div>
+          <div class="info-row"><div class="info-key">Temporary Site Facilities</div><div class="info-val">EF: 14-Apr-26 · TF: 322 ✅ OK</div></div>
+          <div class="info-row"><div class="info-key">Batching Plant No. (1)</div><div class="info-val">EF: 21-Jan-26 · TF: 451 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">Batching Plant No. (2) &amp; (3)</div><div class="info-val">EF: 14-Apr-26 · TF: 322</div></div>
+          <div class="info-row"><div class="info-key">Camp</div><div class="info-val">EF: 17-May-26 · TF: 462</div></div>
+          <div class="info-row"><div class="info-key">Offices</div><div class="info-val">EF: 10-Mar-26 · TF: 518</div></div>
+          <div class="info-row"><div class="info-key">Main Stores</div><div class="info-val">EF: 10-Mar-26 · TF: 518</div></div>
+          <div class="info-row"><div class="info-key">First Excavation</div><div class="info-val">ES: 08-Nov-25 · TF: 0 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">First Concrete Pouring</div><div class="info-val">ES: 09-Nov-25 · TF: 16 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">UG Services</div><div class="info-val">ES: 01-Jun-26 · TF: 451</div></div>
+          <div class="info-row"><div class="info-key">Grounding</div><div class="info-val">ES: 19-May-26 · TF: 462</div></div>
+          <div class="info-row"><div class="info-key">Paving</div><div class="info-val">ES: 05-Nov-26 · TF: 322</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">⚠️ Monitoring Target Milestones — Buildings (C11-K)</div>
+        <div class="card-body">
+          <div class="info-row"><div class="info-key">First Excavation</div><div class="info-val">ES: 08-Jan-26 · TF: 78 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">Batching Plant No. (1)</div><div class="info-val">EF: 15-Jan-26 · TF: 78 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">First Concrete Pouring</div><div class="info-val">EF: 14-Feb-26 · TF: 11 ✅ Done</div></div>
+          <div class="info-row"><div class="info-key">Camp (CRITICAL TF=0)</div><div class="info-val" style="color:#dc2626;">EF: 15-Feb-26 · TF: 0 ⚠️ OVERDUE</div></div>
+          <div class="info-row"><div class="info-key">Offices</div><div class="info-val">EF: 28-Feb-26 · TF: 73</div></div>
+          <div class="info-row"><div class="info-key">Mobilization</div><div class="info-val">EF: 23-Feb-26 · TF: 59</div></div>
+          <div class="info-row"><div class="info-key">Main Stores</div><div class="info-val">EF: 08-Mar-26 · TF: 66</div></div>
+          <div class="info-row"><div class="info-key">Temp. Site Facilities (TSF)</div><div class="info-val">EF: 19-Mar-26 · TF: 56</div></div>
+          <div class="info-row"><div class="info-key">Batching Plant No. (2) &amp; (3)</div><div class="info-val">EF: 19-Mar-26 · TF: 56</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTRACT MILESTONES CPM ── -->
+  <div class="sec"><span class="sec-dot"></span>🏁 Contract Milestone Dates — Both Contracts (from Baseline)</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Milestone ID</th><th>Contract</th><th>Description</th><th>Planned Completion (Baseline)</th><th>TF</th><th>CPM Status</th></tr></thead>
+      <tbody>
+        <tr style="background:#fef2f2;"><td>C-MSCR-PKGIN-CMS-04</td><td><span class="pill p-c09">C09-K</span></td><td>Civil MCC — Interconnecting (Areas 0200/0210)</td><td><strong>28-Feb-27</strong></td><td style="color:#dc2626;font-weight:800;">0</td><td><span class="pill p-crit">🔴 CRITICAL PATH</span></td></tr>
+        <tr><td>C-MSCR-PKG04-CMS-02</td><td><span class="pill p-c09">C09-K</span></td><td>Civil MCC — PKG 04 (Units 200 &amp; 220)</td><td>31-Mar-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr><td>C-MSCR-PKG05-CMS-03</td><td><span class="pill p-c09">C09-K</span></td><td>Civil MCC — PKG 05 (Unit 550)</td><td>31-Mar-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr><td>C-MSCR-PKG01-CMS-01</td><td><span class="pill p-c09">C09-K</span></td><td>Civil MCC — PKG 01 (Excl. Units 150/190/585)</td><td>29-Apr-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr><td>C-MSCR-PKGSF-CMS-05</td><td><span class="pill p-c09">C09-K</span></td><td>Civil MCC — All PKG + Interconnecting — Final</td><td>30-Nov-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical Path</span></td></tr>
+        <tr style="background:#faf5ff;"><td>B-MSCR-PKG04-CMS-02</td><td><span class="pill p-c11">C11-K</span></td><td>Buildings MCC — PKG 04 (SS-200 &amp; RIB-200)</td><td><strong>28-Feb-27</strong></td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr style="background:#faf5ff;"><td>B-MSCR-PKG05-CMS-03</td><td><span class="pill p-c11">C11-K</span></td><td>Buildings MCC — PKG 05</td><td>29-Apr-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr style="background:#faf5ff;"><td>B-MSCR-PKG01-CMS-01</td><td><span class="pill p-c11">C11-K</span></td><td>Buildings MCC — PKG 01 (SS-100, RIB-100, RIB-190)</td><td>31-Mar-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical</span></td></tr>
+        <tr style="background:#faf5ff;"><td>C-MSCR-PKGSF-CMS-04</td><td><span class="pill p-c11">C11-K</span></td><td>Buildings MCC — All PKG 01+04+05 Final</td><td>31-Oct-27</td><td>0</td><td><span class="pill p-crit">🔴 Critical Path</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── CPM BASELINE FILES ── -->
+  <div class="sec"><span class="sec-dot"></span>📂 CPM Baseline Files Reference</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Contract</th><th>Format</th><th>Pages</th><th>Date Added</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr style="background:#f0fdf4;"><td><strong>03- PDF of Detailed L4 Activities-1.pdf</strong></td><td><span class="pill p-c09">C09-K Civil</span></td><td>P6 PDF export</td><td>209</td><td>5 Apr 2026</td><td><span class="pill p-new">🆕 NEW — Most Current</span></td></tr>
+        <tr style="background:#f0fdf4;"><td><strong>03- PDF of Detailed L4 Activities.pdf</strong></td><td><span class="pill p-c11">C11-K Buildings</span></td><td>P6 PDF export</td><td>59</td><td>5 Apr 2026</td><td><span class="pill p-new">🆕 NEW — Most Current</span></td></tr>
+        <tr><td>CPM-Civil/80080-ZA-007-F.xer</td><td><span class="pill p-c09">C09-K Civil</span></td><td>Primavera .xer</td><td>—</td><td>Sep 2025</td><td><span class="pill p-crit">⚠️ Stale — 7 months</span></td></tr>
+        <tr><td>CPM-Building/80080-ZA-007-F.xer</td><td><span class="pill p-c11">C11-K Buildings</span></td><td>Primavera .xer</td><td>—</td><td>Sep 2025</td><td><span class="pill p-crit">⚠️ Stale — 7 months</span></td></tr>
+        <tr><td>80080-ZA-C09-K_Att.III-01-06 Interconnecting Schedule.pdf</td><td><span class="pill p-c09">C09-K</span></td><td>Subcontract schedule</td><td>—</td><td>Contract</td><td><span class="pill p-act">Reference</span></td></tr>
+        <tr><td>80080-ZA-C11-K_Att.III-01 Buildings PKG 01/04/05 Schedule.pdf</td><td><span class="pill p-c11">C11-K</span></td><td>Subcontract schedule</td><td>—</td><td>Contract</td><td><span class="pill p-act">Reference</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+<!-- ═══════════════════ END CPM MONITOR TAB ═══════════════════ -->
+
+<div id="tab-overview" class="panel active">
+
+  <div class="kpi-grid">
+    <div class="kpi b">
+      <div class="kpi-val">$193<span class="kpi-unit">M</span></div>
+      <div class="kpi-lbl">Combined Contract Value</div>
+      <div class="kpi-trend neu">C09-K $125M + C11-K $67M</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">19.8<span class="kpi-unit">%</span></div>
+      <div class="kpi-lbl">Delay Claim Filed</div>
+      <div class="kpi-trend dn">⚠️ Formal claim Apr 2026</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-val">142</div>
+      <div class="kpi-lbl">Transmittals Received</div>
+      <div class="kpi-trend neu">Latest: TRA-00142 (31 Mar)</div>
+    </div>
+    <div class="kpi t">
+      <div class="kpi-val">435</div>
+      <div class="kpi-lbl">Drawings Distributed</div>
+      <div class="kpi-trend neu">CIV 378 · ARC 45 · ELE 12</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">114</div>
+      <div class="kpi-lbl">Latest DPR Number</div>
+      <div class="kpi-trend neu">DPR-115: 5 Apr 2026</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">Feb<span class="kpi-unit"> 2027</span></div>
+      <div class="kpi-lbl">Next Critical Milestone</div>
+      <div class="kpi-trend dn">CMS-04 Interconnecting</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">25.8<span class="kpi-unit">B DZD</span></div>
+      <div class="kpi-lbl">Combined DZD Value</div>
+      <div class="kpi-trend neu">Fixed: 1 USD = 134 DZD</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-val">~17<span class="kpi-unit"> mo</span></div>
+      <div class="kpi-lbl">Time to CMS-04</div>
+      <div class="kpi-trend neu">From today → Feb 2027</div>
+    </div>
+  </div>
+
+  <div class="alert danger">🚨 <div><strong>Delay Justification Report — 19.8%</strong> — A formal delay claim covering both C09-K and C11-K was filed on 5 April 2026 and added to the root project folder. This is the most critical active document at this time. Awaiting UTE TR-SE formal response.</div></div>
+
+  <div class="g21">
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Project Parties</div>
+      <div class="party-grid">
+        <div class="party owner">
+          <div class="party-role">Owner / Client</div>
+          <div class="party-name">Sonatrach SPA</div>
+          <div class="party-detail">Algeria's national oil company. Commissioned this grassroots deep-conversion refinery to reduce fuel imports and refine Hassi Messaoud crude at source.</div>
+        </div>
+        <div class="party epc">
+          <div class="party-role">EPC Contractor (JV)</div>
+          <div class="party-name">UTE TR-SE</div>
+          <div class="party-detail">Técnicas Reunidas (51%) + Sinopec Guangzhou Engineering (49%). Replaced Samsung Engineering in Nov 2024. Total EPC value ~$4B USD.</div>
+        </div>
+        <div class="party sub">
+          <div class="party-role">Subcontractor (SCL) — our entity</div>
+          <div class="party-name">Sinohydro Corporation Limited</div>
+          <div class="party-detail">Civil Works (C09-K) + Buildings Works (C11-K). Two active subcontracts. Combined value ~$193M. Scope covers all 3 packages + interconnecting works.</div>
+        </div>
+      </div>
+
+      <div class="sec"><span class="sec-dot"></span>Drawing Distribution by Discipline</div>
+      <div class="card">
+        <div class="chart-wrap" style="height:200px;"><canvas id="chartDisc"></canvas></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Key Project Milestones</div>
+      <div class="card"><div class="card-body">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot done">✓</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">September 2025</div>
+              <div class="tl-title">Project Start / Site Mobilisation</div>
+              <div class="tl-sub">KOM held 2 Nov 2025. CPM schedules issued. Advance payment: 10%.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot done">✓</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">November 2025</div>
+              <div class="tl-title">Kick-Off Meeting (KOM)</div>
+              <div class="tl-sub">KOM held with UTE TR-SE. Mobilisation plan finalised. Initial drawing packages issued.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot now">→</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">NOW — April 2026</div>
+              <div class="tl-title">Execution Phase (Month ~7)</div>
+              <div class="tl-sub">Active civil &amp; buildings works. DPR-115 latest. Delay claim (19.8%) filed. TRA-00142 is latest transmittal.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot crit">!</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">February 2027 ⚠️ CRITICAL</div>
+              <div class="tl-title">CMS-04 — Interconnecting Civil Works</div>
+              <div class="tl-sub">Most critical C09-K milestone. On the critical path to overall refinery completion. LD exposure begins after 4-week grace period.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot next">→</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">March – April 2027</div>
+              <div class="tl-title">CMS-01 / CMS-02 / CMS-03 (PKG Civil)</div>
+              <div class="tl-sub">Package milestone completions for PKG 01, PKG 04, PKG 05 civil works.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot next">→</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">June 2027</div>
+              <div class="tl-title">C11-K Buildings — Final Completion</div>
+              <div class="tl-sub">All building works PKG 01, 04, 05 complete.</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-left"><div class="tl-dot far">○</div><div class="tl-line"></div></div>
+            <div class="tl-right">
+              <div class="tl-date">30 November 2027</div>
+              <div class="tl-title">C09-K Civil Works — Final Completion</div>
+              <div class="tl-sub">All civil works complete. Defects liability period begins.</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Contract Scope by Package</div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Contract</th><th>Type</th><th>Packages Covered</th><th>DZD Value</th><th>USD (~)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>80080-ZA-C09-K</strong></td>
+            <td><span class="pill p-civ">Civil Works</span></td>
+            <td>PKG 01 · PKG 04 · PKG 05 · Interconnecting</td>
+            <td>16,800,263,315.27</td>
+            <td>~$125.4M</td>
+            <td><span class="pill p-act">✅ Active</span></td>
+          </tr>
+          <tr>
+            <td><strong>80080-ZA-C11-K</strong></td>
+            <td><span class="pill p-arc">Buildings</span></td>
+            <td>PKG 01 · PKG 04 · PKG 05</td>
+            <td>9,010,834,597.84</td>
+            <td>~$67.2M</td>
+            <td><span class="pill p-act">✅ Active</span></td>
+          </tr>
+          <tr style="background:#f8fafc;font-weight:700;">
+            <td>COMBINED TOTAL</td>
+            <td>Civil + Buildings</td>
+            <td>PKG 01 · PKG 04 · PKG 05 · Interconnecting</td>
+            <td><strong>25,811,097,913.11</strong></td>
+            <td><strong>~$192.6M</strong></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Drawing Distribution by Package</div>
+  <div class="card">
+    <div class="chart-wrap" style="height:220px;"><canvas id="chartPkg"></canvas></div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ TAB 2: LATEST UPDATES ═══════════════════ -->
+<div id="tab-updates" class="panel">
+
+  <div class="alert danger">🚨 <div><strong>Most important item today:</strong> A Delay Justification Report documenting 19.8% delay for both C09-K and C11-K has been formally prepared and filed on 5 April 2026. This represents a significant contractual event requiring follow-up with UTE TR-SE.</div></div>
+
+  <div class="sec"><span class="sec-dot"></span>Activity Feed — April 2026</div>
+  <div class="card"><div class="card-body">
+    <div class="news-item">
+      <div class="news-icon">🚨</div>
+      <div class="news-body">
+        <div class="news-date">5 April 2026 · 09:23</div>
+        <div class="news-title">Delay Justification Report — 19.8% — SCL C09K C11K</div>
+        <div class="news-desc">Formal delay claim document prepared and added to root project folder. Documents a 19.8% delay affecting both subcontracts C09-K and C11-K for April 2026. Formal submission to UTE TR-SE pending review. This is the most significant contractual document of the current period.</div>
+        <div style="margin-top:6px;"><span class="pill p-crit">HIGH PRIORITY</span> <span class="pill p-c09">C09-K</span> <span class="pill p-c11">C11-K</span></div>
+      </div>
+    </div>
+    <div class="news-item">
+      <div class="news-icon">📊</div>
+      <div class="news-body">
+        <div class="news-date">6 April 2026 · 08:03</div>
+        <div class="news-title">DPR-115 Uploaded — Daily Progress Report (5 Apr 2026, Sunday)</div>
+        <div class="news-desc">Sinohydro DPR 115 for 5 April 2026 (Sunday) uploaded today. Direct labor: 299 workers (Carpenter 42, Steel Bender 47, Helper 152, Operator 21). Indirect: 47 staff. Total on site: 346. Equipment working: 42 units. Key activities: PR-A/D formwork &amp; reinforcement ongoing; PR-E Module 04/06 lean concrete completed; #50 Batching Plant 96% complete. This is the latest DPR on record.</div>
+        <div style="margin-top:6px;"><span class="pill p-new">🆕 NEW TODAY</span></div>
+      </div>
+    </div>
+    <div class="news-item">
+      <div class="news-icon">📊</div>
+      <div class="news-body">
+        <div class="news-date">5 April 2026 · 10:10–10:11</div>
+        <div class="news-title">DPR 110–113 Batch Upload (30 Mar – 2 Apr 2026)</div>
+        <div class="news-desc">Four daily progress reports uploaded in batch: DPR-110 (30 Mar), DPR-111 (31 Mar), DPR-112 (1 Apr), DPR-113 (2 Apr). Covers the period around month-end March 2026. Likely a catch-up upload after the long weekend.</div>
+        <div style="margin-top:6px;"><span class="pill p-new">BATCH UPLOAD</span></div>
+      </div>
+    </div>
+    <div class="news-item">
+      <div class="news-icon">📬</div>
+      <div class="news-body">
+        <div class="news-date">31 March 2026</div>
+        <div class="news-title">Last Transmittal: TRA-00142</div>
+        <div class="news-desc">Most recent incoming transmittal from UTE TR-SE. 6 days without new transmittal as of 6 April (Mon). Today (Monday) expected to be first working day for new transmittals from UTE TR-SE after Easter weekend.</div>
+        <div style="margin-top:6px;"><span class="pill p-warn">6 DAYS WITHOUT NEW TRA — EXPECT RESUMPTION TODAY</span></div>
+      </div>
+    </div>
+    <div class="news-item">
+      <div class="news-icon">⚠️</div>
+      <div class="news-body">
+        <div class="news-date">Ongoing — Flagged 5 April 2026</div>
+        <div class="news-title">CPM Schedules Not Updated Since September 2025</div>
+        <div class="news-desc">Both the Civil and Building CPM schedule files (Primavera P6 .xer) have not been updated since September 2025 — approximately 7 months ago. Project is now in active execution phase. Schedule update is overdue and should be prioritised.</div>
+        <div style="margin-top:6px;"><span class="pill p-warn">ACTION REQUIRED</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="sec"><span class="sec-dot"></span>Delay Claim Detail — 19.8%</div>
+  <div class="g2">
+    <div class="card"><div class="card-body">
+      <div class="info-row"><div class="info-key">Document Title</div><div class="info-val">Delay Justification Report — 19.8%</div></div>
+      <div class="info-row"><div class="info-key">Subcontracts Covered</div><div class="info-val">C09-K (Civil) &amp; C11-K (Buildings)</div></div>
+      <div class="info-row"><div class="info-key">Filing Date</div><div class="info-val">5 April 2026</div></div>
+      <div class="info-row"><div class="info-key">Filed By</div><div class="info-val">Sinohydro Corporation Limited (SCL)</div></div>
+      <div class="info-row"><div class="info-key">Filed To</div><div class="info-val">UTE TR-SE (Técnicas Reunidas + SGE)</div></div>
+      <div class="info-row"><div class="info-key">Claim Type</div><div class="info-val">SFR / FEWO — Delay Justification</div></div>
+      <div class="info-row"><div class="info-key">Status</div><div class="info-val">Filed — Awaiting UTE Response</div></div>
+    </div></div>
+    <div class="card"><div class="card-body">
+      <div style="margin-bottom:10px;font-size:.75rem;font-weight:700;color:var(--gray600);">SCHEDULE IMPACT</div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Overall Delay Claimed</span><span style="color:#dc2626;font-weight:800;">19.8%</span></div>
+        <div class="prog-track"><div class="prog-fill red" style="width:19.8%">19.8%</div></div>
+      </div>
+      <div style="margin-top:14px;font-size:.75rem;line-height:1.6;color:var(--gray600);">
+        <div>📋 Contract Duration (C09-K): ~26 months (Sept 2025 → Nov 2027)</div>
+        <div>⏱️ 19.8% delay = approximately <strong>5.1 months equivalent</strong></div>
+        <div>⚠️ If accepted, could shift milestones beyond LD grace periods</div>
+        <div>💰 LD cap: max 1% of contract value per contract</div>
+      </div>
+      <div class="alert warn" style="margin-top:12px;margin-bottom:0;">⚠️ Document content is under review. Follow up required with contracts &amp; claims team before submitting to UTE TR-SE.</div>
+    </div></div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Pending Actions</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Action</th><th>Owner</th><th>Priority</th><th>Target Date</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Review and formally submit Delay Justification Report (19.8%) to UTE TR-SE</td>
+          <td>Contracts / Claims</td>
+          <td><span class="pill p-crit">URGENT</span></td>
+          <td>This week</td>
+          <td><span class="pill p-warn">Pending Review</span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Update CPM schedules (Civil &amp; Building) — both stale since Sep 2025</td>
+          <td>Planning / P6</td>
+          <td><span class="pill p-warn">HIGH</span></td>
+          <td>TBD</td>
+          <td><span class="pill p-warn">Overdue</span></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Follow up on TRA-00142 follow-on transmittals (5 days without new incoming)</td>
+          <td>Document Control</td>
+          <td><span class="pill p-ok">NORMAL</span></td>
+          <td>7 Apr 2026</td>
+          <td><span class="pill p-warn">Monitor</span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Review DPR-115 (5 Apr, Sunday) — 346 on site, 299 direct, 42 equipment. Confirm PR-E Module 04/06 completions closed out in QA system</td>
+          <td>Site / PM</td>
+          <td><span class="pill p-ok">NORMAL</span></td>
+          <td>Today</td>
+          <td><span class="pill p-warn">New</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 3: SCHEDULE & MILESTONES ═══════════════════ -->
+<div id="tab-schedule" class="panel">
+
+  <div class="alert warn">⚠️ <div>CPM schedules (Primavera P6 .xer files) for both Civil and Building packages were last updated in <strong>September 2025</strong>. They are approximately <strong>7 months out of date</strong>. Progress updates, logic changes, and the 19.8% delay claim are not yet reflected in the baseline schedule.</div></div>
+
+  <div class="sec"><span class="sec-dot"></span>Master Milestone Register</div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Milestone ID</th><th>Description</th><th>Contract</th><th>Target Date</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>KOM</td><td>Kick-Off Meeting</td><td><span class="pill p-c09">C09-K</span> <span class="pill p-c11">C11-K</span></td><td>2 Nov 2025</td><td><span class="pill p-act">✅ Done</span></td><td>KOM held, minutes issued</td></tr>
+          <tr><td>START</td><td>Site Mobilisation / Works Start</td><td><span class="pill p-c09">C09-K</span> <span class="pill p-c11">C11-K</span></td><td>Sep 2025</td><td><span class="pill p-act">✅ Done</span></td><td>Foundation stone: 24 Feb 2025</td></tr>
+          <tr><td>—</td><td>Now — Month ~7 of Execution</td><td><span class="pill p-c09">C09-K</span> <span class="pill p-c11">C11-K</span></td><td>Apr 2026</td><td><span class="pill p-new">▶ In Progress</span></td><td>DPR-115 latest; 19.8% delay filed</td></tr>
+          <tr style="background:#fef2f2;"><td>CMS-04</td><td>Interconnecting Civil Works Complete</td><td><span class="pill p-c09">C09-K</span></td><td><strong>Feb 2027</strong></td><td><span class="pill p-crit">🔴 Critical</span></td><td>On critical path; ~10 months away; LD risk</td></tr>
+          <tr><td>CMS-01</td><td>PKG 01 Civil Works Complete</td><td><span class="pill p-c09">C09-K</span></td><td>Mar 2027</td><td><span class="pill p-warn">Upcoming</span></td><td>Main process units foundations</td></tr>
+          <tr><td>CMS-02</td><td>PKG 04 Civil Works Complete</td><td><span class="pill p-c09">C09-K</span></td><td>Mar 2027</td><td><span class="pill p-warn">Upcoming</span></td><td>Utilities area foundations</td></tr>
+          <tr><td>CMS-03</td><td>PKG 05 Civil Works Complete</td><td><span class="pill p-c09">C09-K</span></td><td>Apr 2027</td><td><span class="pill p-warn">Upcoming</span></td><td>Offsite / tankage / WWTP foundations</td></tr>
+          <tr><td>C11-FC</td><td>C11-K Buildings — Final Completion</td><td><span class="pill p-c11">C11-K</span></td><td>Jun 2027</td><td><span class="pill p-warn">Upcoming</span></td><td>All buildings PKG 01, 04, 05</td></tr>
+          <tr><td>C09-FC</td><td>C09-K Civil — Final Completion</td><td><span class="pill p-c09">C09-K</span></td><td>30 Nov 2027</td><td><span class="pill p-warn">Future</span></td><td>DLP begins post-completion</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="sec"><span class="sec-dot"></span>LD Risk Register</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">LD Grace Period</div><div class="info-val">4 weeks after each milestone date</div></div>
+        <div class="info-row"><div class="info-key">LD Rate</div><div class="info-val">0.5% of contract value per week</div></div>
+        <div class="info-row"><div class="info-key">LD Maximum Cap</div><div class="info-val">1% of contract value</div></div>
+        <div class="info-row"><div class="info-key">C09-K Max LD Exposure</div><div class="info-val" style="color:#dc2626;">~$1.254M USD</div></div>
+        <div class="info-row"><div class="info-key">C11-K Max LD Exposure</div><div class="info-val" style="color:#dc2626;">~$0.673M USD</div></div>
+        <div class="info-row"><div class="info-key">Combined Max LD</div><div class="info-val" style="color:#dc2626;">~$1.927M USD</div></div>
+        <div class="info-row"><div class="info-key">Current Claim (19.8%)</div><div class="info-val" style="color:#d97706;">Delay justification filed — mitigates LD risk if accepted</div></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Critical Path Summary</div>
+      <div class="card"><div class="card-body">
+        <div style="font-size:.78rem;color:var(--gray600);margin-bottom:10px;">Time remaining to key milestones from today (5 April 2026):</div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>CMS-04 Interconnecting (Feb 2027)</span><span>~10 months</span></div>
+          <div class="prog-track"><div class="prog-fill red" style="width:75%">Critical Path</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>CMS-01/02 PKG Civil (Mar 2027)</span><span>~11 months</span></div>
+          <div class="prog-track"><div class="prog-fill amb" style="width:82%">Upcoming</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>C11-K Buildings FC (Jun 2027)</span><span>~14 months</span></div>
+          <div class="prog-track"><div class="prog-fill civ" style="width:55%">Upcoming</div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-label"><span>C09-K Civil FC (Nov 2027)</span><span>~19 months</span></div>
+          <div class="prog-track"><div class="prog-fill grn" style="width:40%">Future</div></div>
+        </div>
+        <div class="alert warn" style="margin-top:12px;margin-bottom:0;">⚠️ With the 19.8% delay claim active, all downstream milestone dates may shift. Await UTE TR-SE response to determine revised schedule.</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>CPM Schedule File Status</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>File</th><th>Package</th><th>Format</th><th>Last Modified</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>80080-ZA-007-F.xer</td><td>C09-K Civil Works</td><td>Primavera P6</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale — 7 months</span></td>
+        </tr>
+        <tr>
+          <td>OVERALL CIVIL WORKS.pdf</td><td>C09-K — Bar chart output</td><td>PDF</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale</span></td>
+        </tr>
+        <tr>
+          <td>MS-01 to MS-05 PDFs</td><td>C09-K Milestone look-ahead charts</td><td>PDF (5 files)</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale</span></td>
+        </tr>
+        <tr>
+          <td>80080-ZA-007-F.xer (Buildings)</td><td>C11-K Buildings Works</td><td>Primavera P6</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale — 7 months</span></td>
+        </tr>
+        <tr>
+          <td>ALL PACKAGES BUILDINGS CPM.pdf</td><td>C11-K — Bar chart output</td><td>PDF</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale</span></td>
+        </tr>
+        <tr>
+          <td>MS-01 to MS-03 PDFs (Buildings)</td><td>C11-K Milestone look-ahead charts</td><td>PDF (3 files)</td><td>September 2025</td>
+          <td><span class="pill p-crit">⚠️ Stale</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 4: TRANSMITTALS ═══════════════════ -->
+<div id="tab-transmittals" class="panel">
+
+  <div class="kpi-grid">
+    <div class="kpi g"><div class="kpi-val">142</div><div class="kpi-lbl">Total Transmittals</div><div class="kpi-trend neu">As of 31 Mar 2026</div></div>
+    <div class="kpi b"><div class="kpi-val">TRA-<span style="font-size:1.4rem;">142</span></div><div class="kpi-lbl">Latest Transmittal</div><div class="kpi-trend neu">31 March 2026</div></div>
+    <div class="kpi a"><div class="kpi-val">5</div><div class="kpi-lbl">Days Without New TRA</div><div class="kpi-trend dn">Weekend slowdown</div></div>
+    <div class="kpi t"><div class="kpi-val">435</div><div class="kpi-lbl">Total Drawings</div><div class="kpi-trend neu">CIV 378 · ARC 45 · ELE 12</div></div>
+    <div class="kpi"><div class="kpi-val">31</div><div class="kpi-lbl">Transmittals in March</div><div class="kpi-trend neu">Peak month to date</div></div>
+    <div class="kpi r"><div class="kpi-val">0</div><div class="kpi-lbl">New TRA This Week</div><div class="kpi-trend dn">Apr 1–5 = 0</div></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-head">📊 Monthly Transmittal Volume</div>
+      <div class="chart-wrap" style="height:220px;"><canvas id="chartMonth"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">🥧 Drawings by Package</div>
+      <div class="chart-wrap" style="height:220px;"><canvas id="chartPkg2"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Transmittal Monthly Summary</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Month</th><th>Transmittals</th><th>Running Total</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>November 2025</td><td>18</td><td>18</td><td>Initial mobilisation drawings — civil foundations, general arrangement</td></tr>
+        <tr><td>December 2025</td><td>26</td><td>44</td><td>Ramp up — PKG 01 structural drawings</td></tr>
+        <tr><td>January 2026</td><td>29</td><td>73</td><td>PKG 04 &amp; interconnecting drawings issued</td></tr>
+        <tr><td>February 2026</td><td>38</td><td>111</td><td>Peak month — PKG 05 offsite drawings issued</td></tr>
+        <tr><td>March 2026</td><td>31</td><td>142</td><td>Steady flow. Last TRA: TRA-00142 (31 Mar)</td></tr>
+        <tr style="background:#fef3c7;"><td>April 2026 (to date)</td><td>0</td><td>142</td><td>No new transmittals Apr 1–5. Weekend. Expected to resume 7 Apr.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Drawing Distribution by Discipline</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Discipline</th><th>Code</th><th>Count</th><th>% of Total</th><th>Bar</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Civil</td><td><span class="pill p-civ">CIV</span></td><td><strong>378</strong></td><td>86.9%</td>
+          <td><div class="prog-track" style="width:200px;display:inline-block;"><div class="prog-fill civ" style="width:87%">87%</div></div></td>
+        </tr>
+        <tr>
+          <td>Architecture</td><td><span class="pill p-arc">ARC</span></td><td><strong>45</strong></td><td>10.3%</td>
+          <td><div class="prog-track" style="width:200px;display:inline-block;"><div class="prog-fill arc" style="width:10%">10%</div></div></td>
+        </tr>
+        <tr>
+          <td>Electrical</td><td><span class="pill p-ele">ELE</span></td><td><strong>12</strong></td><td>2.8%</td>
+          <td><div class="prog-track" style="width:200px;display:inline-block;"><div class="prog-fill ele" style="width:3%">3%</div></div></td>
+        </tr>
+        <tr style="font-weight:700;background:#f8fafc;">
+          <td>TOTAL</td><td>—</td><td><strong>435</strong></td><td>100%</td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Drawings by Package</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Package</th><th>Civil (CIV)</th><th>Architecture (ARC)</th><th>Electrical (ELE)</th><th>Total</th><th>% of All</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill p-p01">PKG 01</span></td><td>181</td><td>13</td><td>2</td><td><strong>196</strong></td><td>45.1%</td></tr>
+        <tr><td><span class="pill p-int">Interconnecting</span></td><td>59</td><td>5</td><td>2</td><td><strong>66</strong></td><td>15.2%</td></tr>
+        <tr><td><span class="pill p-p05">PKG 05</span></td><td>61</td><td>23</td><td>4</td><td><strong>88</strong></td><td>20.2%</td></tr>
+        <tr><td><span class="pill p-p04">PKG 04</span></td><td>38</td><td>6</td><td>3</td><td><strong>47</strong></td><td>10.8%</td></tr>
+        <tr><td>Standards</td><td>27</td><td>7</td><td>1</td><td><strong>35</strong></td><td>8.0%</td></tr>
+        <tr style="font-weight:700;background:#f8fafc;"><td>TOTAL</td><td>378</td><td>45</td><td>12</td><td><strong>435</strong></td><td>100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 5: DAILY HIGHLIGHT & WORKFORCE ═══════════════════ -->
+<div id="tab-dpr" class="panel">
+
+  <!-- ── DAILY HIGHLIGHT HEADER ── -->
+  <div style="background:linear-gradient(90deg,#0f2447,#1a3a6b);color:white;border-radius:12px;padding:16px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="font-size:2rem;">📋</div>
+    <div style="flex:1;">
+      <div style="font-size:1.05rem;font-weight:800;letter-spacing:.2px;">Daily Highlight — Monday 6 April 2026</div>
+      <div style="font-size:.75rem;color:#93c5fd;margin-top:3px;">Auto-generated 10:00 AM · Source: DPR-115 (5 Apr) · Baseline: Sep 2025 CPM · Delay: 19.8%</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <span style="background:rgba(220,38,38,.3);border:1px solid rgba(220,38,38,.6);border-radius:20px;padding:5px 13px;font-size:.72rem;font-weight:700;">🔴 19.8% DELAYED</span>
+      <span style="background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.4);border-radius:20px;padding:5px 13px;font-size:.72rem;font-weight:700;">⏱ Camp +50 Days Overdue</span>
+      <span style="background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);border-radius:20px;padding:5px 13px;font-size:.72rem;font-weight:700;">👷 346 On Site</span>
+    </div>
+  </div>
+
+  <!-- ── TODAY'S KPI STRIP ── -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:16px;">
+    <div class="kpi b">
+      <div class="kpi-val">346</div>
+      <div class="kpi-lbl">Total On Site Today</div>
+      <div class="kpi-trend neu">DPR-115 · 5 Apr</div>
+    </div>
+    <div class="kpi g">
+      <div class="kpi-val">299</div>
+      <div class="kpi-lbl">Direct Labor</div>
+      <div class="kpi-trend neu">Day shift · 0 night</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val">47</div>
+      <div class="kpi-lbl">Indirect Staff</div>
+      <div class="kpi-trend neu">Management + support</div>
+    </div>
+    <div class="kpi t">
+      <div class="kpi-val">42</div>
+      <div class="kpi-lbl">Equipment Working</div>
+      <div class="kpi-trend neu">0 idle · 42 active</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">50 <span class="kpi-unit">days</span></div>
+      <div class="kpi-lbl">Camp Overdue</div>
+      <div class="kpi-trend dn">↑ Was due 15-Feb-26</div>
+    </div>
+    <div class="kpi a">
+      <div class="kpi-val">19.8<span class="kpi-unit">%</span></div>
+      <div class="kpi-lbl">Programme Delay</div>
+      <div class="kpi-trend dn">+127 days all CMS</div>
+    </div>
+    <div class="kpi r">
+      <div class="kpi-val">$0.67<span class="kpi-unit">M</span></div>
+      <div class="kpi-lbl">LD Accrued (C11-K)</div>
+      <div class="kpi-trend dn">Capped — 1% C11-K</div>
+    </div>
+    <div class="kpi b">
+      <div class="kpi-val">DPR-<span style="font-size:1.4rem;">115</span></div>
+      <div class="kpi-lbl">Latest DPR</div>
+      <div class="kpi-trend neu">5 April 2026</div>
+    </div>
+  </div>
+
+  <!-- ── CRITICAL ALERTS ── -->
+  <div class="sec" style="margin-top:4px;"><span class="sec-dot" style="background:#dc2626;"></span>🚨 Critical Alerts — 6 April 2026</div>
+  <div class="alert danger" style="margin-bottom:10px;">🔴 <div><strong>Camp Milestone OVERDUE — Day 50:</strong> I000MSGNMON180 (TF=0) was due 15-Feb-2026. Camp at 93% complete per DPR-115. LD cap reached: <strong>$0.67M accrued on C11-K</strong>. Remaining 7% must be completed urgently.</div></div>
+  <div class="alert warn" style="margin-bottom:10px;">⚠️ <div><strong>PR-B Piperack Excavation — TF=2 NEAR-CRITICAL:</strong> C060CIPR585PRB10.01 has only 2 days float, baseline EF 11-Apr-2026 (5 days from now). Base Formworks (C060CIPR585PRB10.03, TF=25) start tomorrow — confirm resources on site.</div></div>
+  <div class="alert info" style="margin-bottom:10px;">📅 <div><strong>Starting TODAY:</strong> SS.100 GF Reinforcement of Columns/Walls (C090BUCSS1000120.01, C11-K, TF=56) — concrete structural phase begins for Unit 09 electrical substation. Also TRANF.100 Foundation Formworks (C090BUFOS1000020.04, TF=45). <strong>Completing TODAY:</strong> OPB.100 Concrete Casting (C090BUFOOB100030.05, TF=117) — QA sign-off required.</div></div>
+  <div class="alert info" style="margin-bottom:18px;">📰 <div><strong>19.8% Delay Claim (Apr 2026) awaiting UTE TR-SE formal response.</strong> CPM schedule 7+ months stale — request updated P6 XER. Last transmittal: TRA-00142 (31 Mar) — 6 days without new TRA. Expect resumption of transmittals today (first Monday post-Easter).</div></div>
+
+  <!-- ══════════════════════════════════════════
+       WORKFORCE TREND CHARTS
+  ══════════════════════════════════════════ -->
+  <div class="sec"><span class="sec-dot" style="background:#2563eb;"></span>📈 Workforce Trend — DPR-92 to DPR-115 (9 Mar – 5 Apr 2026)</div>
+
+  <!-- Chart 1: Total Workforce + Direct + Indirect line chart -->
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head" style="background:#eff6ff;color:#1e40af;">
+      👷 Total Workforce Over Time — 28 Days
+      <span style="margin-left:auto;font-size:.67rem;font-weight:500;">Source: Sinohydro DPR files · DPR-92 to DPR-115</span>
+    </div>
+    <div class="chart-wrap" style="height:280px;"><canvas id="chartWorkforce"></canvas></div>
+  </div>
+
+  <!-- 2-col: Equipment + Labor Breakdown -->
+  <div class="g2" style="margin-bottom:18px;">
+    <div class="card">
+      <div class="card-head" style="background:#f0fdf4;color:#14532d;">🚜 Equipment Trend Over Time</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartEquipment"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:#faf5ff;color:#6d28d9;">👷 Latest DPR — Direct Labor by Category (DPR-115)</div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="chartLaborBreakdown"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Chart 3: Direct/Indirect stacked bar -->
+  <div class="card" style="margin-bottom:18px;">
+    <div class="card-head" style="background:#fffbeb;color:#92400e;">📊 Direct vs Indirect Workforce — Daily Breakdown</div>
+    <div class="chart-wrap" style="height:260px;"><canvas id="chartDirectIndirect"></canvas></div>
+  </div>
+
+  <!-- Chart 4: Indirect staff breakdown doughnut -->
+  <div class="g2" style="margin-bottom:18px;">
+    <div class="card">
+      <div class="card-head" style="background:#f0f9ff;color:#0c4a6e;">🧑‍💼 Indirect Staff Categories (DPR-115)</div>
+      <div class="chart-wrap" style="height:260px;"><canvas id="chartIndirectBreakdown"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:#f0fdf4;color:#14532d;">📊 Daily Manhours Trend (estimated)</div>
+      <div class="chart-wrap" style="height:260px;"><canvas id="chartManhours"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TODAY'S ACTIVITY STATUS (from CPM)
+  ══════════════════════════════════════════ -->
+  <div class="sec"><span class="sec-dot"></span>📅 Today's CPM Activity Status — 6 April 2026</div>
+  <div class="g3" style="margin-bottom:18px;">
+    <div class="card">
+      <div class="card-head" style="background:#fef2f2;color:#991b1b;">✅ Completing TODAY</div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-key" style="font-size:.72rem;">C090BUFOOB100030.05</div><div class="info-val" style="font-size:.7rem;color:#dc2626;">EF: 6 Apr</div></div>
+        <div style="font-size:.8rem;font-weight:700;margin:6px 0 2px;">OPB.100 Concrete Casting for Foundations</div>
+        <div style="font-size:.71rem;color:#64748b;">C11-K · Unit 09 · TF: 117 · Duration: 2d<br>QA/QC sign-off required today to gate coating works.</div>
+        <div style="margin-top:8px;"><span class="pill p-c11">C11-K</span> <span class="pill p-p01">PKG 01</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:#f0fdf4;color:#14532d;">🚀 Starting TODAY ×2</div>
+      <div class="card-body">
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:3px;">C090BUCSS1000120.01</div>
+        <div style="font-size:.71rem;color:#64748b;margin-bottom:8px;">SS.100 GF Reinforcement of Columns/Walls<br><strong>⭐ KEY EVENT</strong> — C11-K · TF:56 · ES: 6-Apr · EF: 14-Apr</div>
+        <div style="font-size:.8rem;font-weight:700;margin-bottom:3px;">C090BUFOS1000020.04</div>
+        <div style="font-size:.71rem;color:#64748b;">TRANF.100 Foundation Formworks<br>C11-K · TF:45 · ES: 6-Apr · EF: 12-Apr</div>
+        <div style="margin-top:8px;"><span class="pill p-c11">C11-K</span> <span class="pill p-p01">PKG 01</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:#fffbeb;color:#92400e;">⏭️ Starting TOMORROW (7 Apr)</div>
+      <div class="card-body">
+        <div class="info-row"><div class="info-key" style="font-size:.72rem;">C060CIPR585PRB10.03</div><div class="info-val" style="font-size:.7rem;color:#d97706;">TF: 25</div></div>
+        <div style="font-size:.8rem;font-weight:700;margin:4px 0 2px;">Base Formworks — Piperack PR-B</div>
+        <div style="font-size:.71rem;color:#64748b;">C09-K · Unit 06 · ES: 7-Apr · EF: 24-May · Duration: 41d<br>Follows near-critical PR-B Excavation (TF=2). Monitor float.</div>
+        <div style="margin-top:8px;"><span class="pill p-c09">C09-K</span> <span class="pill p-int">Unit 06</span> <span class="pill p-warn">TF=25</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       DPR REGISTER TABLE
+  ══════════════════════════════════════════ -->
+  <div class="sec"><span class="sec-dot"></span>📁 Daily Progress Report Register — Sinohydro (C09-K + C11-K)</div>
+  <div class="fbar">
+    <label>Search:</label>
+    <input type="text" placeholder="Search DPR…" oninput="filterTbl('dprTbl',this.value)">
+  </div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll">
+      <table id="dprTbl">
+        <thead>
+          <tr>
+            <th>DPR #</th><th>Report Date</th><th>Direct</th><th>Indirect</th><th>Total</th><th>Equipment</th><th>Filename</th><th>Uploaded</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="dpr-row-new" style="background:#f0fdf4;"><td><strong>115</strong></td><td>Sun 5 Apr 2026</td><td><strong>299</strong></td><td>47</td><td><strong>346</strong></td><td>42</td><td style="font-size:.69rem;">Sinohydro DPR 115_05_04_2026.xlsx</td><td>6 Apr · 08:03</td><td><span class="pill p-new">🆕 Latest</span></td></tr>
+          <tr class="dpr-row-new"><td>114</td><td>Sat 4 Apr 2026</td><td>311</td><td>47</td><td>358</td><td>~40</td><td style="font-size:.69rem;">Copy Sinohydro DPR 114_04_04_2026.xlsx</td><td>5 Apr · 10:09</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr class="dpr-row-new"><td>113</td><td>Thu 2 Apr 2026</td><td>318</td><td>47</td><td>365</td><td>~42</td><td style="font-size:.69rem;">Copy Sinohydro DPR 113_02_04_2026.xlsx</td><td>5 Apr · 10:10</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr class="dpr-row-new"><td>112</td><td>Wed 1 Apr 2026</td><td>315</td><td>47</td><td>362</td><td>~40</td><td style="font-size:.69rem;">Copy Sinohydro DPR 112_01_04_2026.xlsx</td><td>5 Apr · 10:10</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>111</td><td>Tue 31 Mar 2026</td><td>249</td><td>39</td><td>288</td><td>~32</td><td style="font-size:.69rem;">Copy Sinohydro DPR 111_31_03_2026.xlsx</td><td>5 Apr · 10:11</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>110</td><td>Mon 30 Mar 2026</td><td>248</td><td>39</td><td>287</td><td>~32</td><td style="font-size:.69rem;">Copy Sinohydro DPR 110_30_03_2026.xlsx</td><td>5 Apr · 10:11</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>109</td><td>Sun 29 Mar 2026</td><td>227</td><td>39</td><td>266</td><td>~30</td><td style="font-size:.69rem;">Sinohydro DPR 109_29_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>108</td><td>Sat 28 Mar 2026</td><td>245</td><td>39</td><td>284</td><td>~32</td><td style="font-size:.69rem;">Sinohydro DPR 108_28_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr style="color:#94a3b8;"><td>107</td><td>Fri 27 Mar 2026</td><td>—</td><td>—</td><td>—</td><td>—</td><td style="font-size:.69rem;font-style:italic;">Not uploaded (rest day / missing)</td><td>—</td><td><span class="pill" style="background:#f1f5f9;color:#94a3b8;">Missing</span></td></tr>
+          <tr><td>106</td><td>Wed 25 Mar 2026</td><td>224</td><td>39</td><td>263</td><td>~28</td><td style="font-size:.69rem;">Sinohydro DPR 106_25_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>105</td><td>Tue 24 Mar 2026</td><td>191</td><td>39</td><td>230</td><td>~24</td><td style="font-size:.69rem;">Sinohydro DPR 105_24_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>104</td><td>Mon 23 Mar 2026</td><td>207</td><td>39</td><td>246</td><td>~26</td><td style="font-size:.69rem;">Sinohydro DPR 104_23_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>103</td><td>Sun 22 Mar 2026</td><td>165</td><td>39</td><td>204</td><td>~22</td><td style="font-size:.69rem;">Sinohydro DPR 103_22_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>102</td><td>Sat 21 Mar 2026</td><td>123</td><td>39</td><td>162</td><td>~16</td><td style="font-size:.69rem;">Sinohydro DPR 102_21_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>101</td><td>Thu 19 Mar 2026</td><td>162</td><td>39</td><td>201</td><td>~20</td><td style="font-size:.69rem;">Sinohydro DPR 101_19_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>100</td><td>Wed 18 Mar 2026</td><td>170</td><td>39</td><td>209</td><td>~22</td><td style="font-size:.69rem;">Sinohydro DPR 100_18_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>99</td><td>Tue 17 Mar 2026</td><td>211</td><td>47</td><td>258</td><td>~27</td><td style="font-size:.69rem;">Sinohydro DPR 99_17_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>98</td><td>Mon 16 Mar 2026</td><td>194</td><td>47</td><td>241</td><td>~25</td><td style="font-size:.69rem;">Sinohydro DPR 98_16_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>97</td><td>Sun 15 Mar 2026</td><td>190</td><td>47</td><td>237</td><td>~25</td><td style="font-size:.69rem;">Sinohydro DPR 97_15_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>96</td><td>Sat 14 Mar 2026</td><td>220</td><td>47</td><td>267</td><td>~28</td><td style="font-size:.69rem;">Sinohydro DPR 96_14_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>95</td><td>Thu 12 Mar 2026</td><td>210</td><td>47</td><td>257</td><td>~27</td><td style="font-size:.69rem;">Sinohydro DPR 95_12_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>94</td><td>Wed 11 Mar 2026</td><td>213</td><td>47</td><td>260</td><td>~28</td><td style="font-size:.69rem;">Sinohydro DPR 94_11_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>93</td><td>Tue 10 Mar 2026</td><td>208</td><td>47</td><td>255</td><td>~27</td><td style="font-size:.69rem;">Sinohydro DPR 93_10_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td>92</td><td>Mon 9 Mar 2026</td><td>208</td><td>47</td><td>255</td><td>~27</td><td style="font-size:.69rem;">Sinohydro DPR 92_09_03_2026.xlsx</td><td>Prior session</td><td><span class="pill p-act">On File</span></td></tr>
+          <tr><td colspan="9" style="text-align:center;color:var(--gray400);font-style:italic;padding:14px;">DPR 001–091 on file (Nov 2025 – Mar 2026)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert info" style="margin-top:14px;">ℹ️ <div>Direct/Indirect totals are from the Summary section of each DPR "Daily Report" sheet. Equipment figures for DPR-92 to DPR-114 are estimated from file metadata; DPR-115 equipment (42 units) is extracted from the full dataset. DPR numbering started from Day 1 of site mobilisation (estimated Nov 2025). DPR-107 not uploaded (rest day).</div></div>
+
+</div>
+
+<!-- ═══════════════════ TAB 6: COMMERCIAL ═══════════════════ -->
+<div id="tab-commercial" class="panel">
+
+  <div class="sec"><span class="sec-dot"></span>Subcontract Summary</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Contract Ref.</th><th>Scope</th><th>DZD Value</th><th>USD Value (~)</th><th>Packages</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>80080-ZA-C09-K Rev.0</strong></td><td>Civil Works</td>
+          <td>16,800,263,315.27</td><td>~$125.4M</td>
+          <td>PKG 01, 04, 05 + Interconnecting</td><td><span class="pill p-act">✅ Signed &amp; Active</span></td>
+        </tr>
+        <tr>
+          <td><strong>80080-ZA-C11-K Rev.0</strong></td><td>Buildings Works</td>
+          <td>9,010,834,597.84</td><td>~$67.2M</td>
+          <td>PKG 01, 04, 05</td><td><span class="pill p-act">✅ Signed &amp; Active</span></td>
+        </tr>
+        <tr style="background:#f8fafc;font-weight:700;">
+          <td>COMBINED TOTAL</td><td>Civil + Buildings</td>
+          <td>25,811,097,913.11</td><td>~$192.6M</td><td>PKG 01, 04, 05 + Interconnecting</td><td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Commercial Terms</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">Currency Split</div><div class="info-val">70% DZD / 30% USD</div></div>
+        <div class="info-row"><div class="info-key">Fixed FX Rate (Contract)</div><div class="info-val">1 USD = 134 DZD</div></div>
+        <div class="info-row"><div class="info-key">Market Rate (Apr 2026)</div><div class="info-val">~1 USD = 132–133 DZD</div></div>
+        <div class="info-row"><div class="info-key">FX Variance Impact</div><div class="info-val">Minor (contract fixed rate protects SCL)</div></div>
+        <div class="info-row"><div class="info-key">Advance Payment</div><div class="info-val">10% of contract value upfront</div></div>
+        <div class="info-row"><div class="info-key">Advance Recovery Rate</div><div class="info-val">16% deducted per IPC certificate</div></div>
+        <div class="info-row"><div class="info-key">Retention</div><div class="info-val">5% of certified value</div></div>
+        <div class="info-row"><div class="info-key">LD Grace Period</div><div class="info-val">4 weeks after each milestone date</div></div>
+        <div class="info-row"><div class="info-key">LD Rate</div><div class="info-val">0.5% of contract value per week</div></div>
+        <div class="info-row"><div class="info-key">LD Maximum Cap</div><div class="info-val">1% of contract value (hard cap)</div></div>
+        <div class="info-row"><div class="info-key">C09-K Max LD Exposure</div><div class="info-val" style="color:#dc2626;">~$1,254,000 USD</div></div>
+        <div class="info-row"><div class="info-key">C11-K Max LD Exposure</div><div class="info-val" style="color:#dc2626;">~$673,000 USD</div></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Contract Value Breakdown</div>
+      <div class="card"><div class="card-body">
+        <div style="font-size:.75rem;font-weight:700;color:var(--gray600);margin-bottom:10px;">C09-K — CIVIL WORKS (~$125.4M)</div>
+        <div class="prog-wrap"><div class="prog-label"><span>DZD Portion (70%)</span><span>11.76B DZD</span></div><div class="prog-track"><div class="prog-fill civ" style="width:70%">70%</div></div></div>
+        <div class="prog-wrap"><div class="prog-label"><span>USD Portion (30%)</span><span>~$37.6M @ 134</span></div><div class="prog-track"><div class="prog-fill arc" style="width:30%">30%</div></div></div>
+
+        <div style="font-size:.75rem;font-weight:700;color:var(--gray600);margin:14px 0 10px;">C11-K — BUILDINGS WORKS (~$67.2M)</div>
+        <div class="prog-wrap"><div class="prog-label"><span>DZD Portion (70%)</span><span>6.31B DZD</span></div><div class="prog-track"><div class="prog-fill civ" style="width:70%">70%</div></div></div>
+        <div class="prog-wrap"><div class="prog-label"><span>USD Portion (30%)</span><span>~$20.2M @ 134</span></div><div class="prog-track"><div class="prog-fill arc" style="width:30%">30%</div></div></div>
+      </div></div>
+
+      <div class="sec" style="margin-top:16px;"><span class="sec-dot"></span>EPC Context</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">EPC JV</div><div class="info-val">UTE TR-SE (TR 51% + SGE 49%)</div></div>
+        <div class="info-row"><div class="info-key">EPC Contract Value</div><div class="info-val">~$4B USD (€3.7B)</div></div>
+        <div class="info-row"><div class="info-key">SCL Share of EPC</div><div class="info-val">~4.8% ($193M of $4B)</div></div>
+        <div class="info-row"><div class="info-key">EPC Target Completion</div><div class="info-val">Late 2029 (65 months)</div></div>
+        <div class="info-row"><div class="info-key">First Units Operational</div><div class="info-val">Late 2027</div></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 7: DOCUMENTS ═══════════════════ -->
+<div id="tab-documents" class="panel">
+
+  <div class="sec"><span class="sec-dot"></span>Project Folder Structure</div>
+  <div class="g3">
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">📑</span><span class="ftree-name">01 - Contract Management</span><span class="ftree-meta">Static</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">Contracts/<br><small>C09-K_Rev.0_Signed.pdf · C11-K_Rev.0_Signed.pdf</small></span><span class="fsub-tag">PDFs</span></div>
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">KOM/<br><small>Kick-Off Meeting.pptx · Preliminary Work Plan.xlsx · Site Layout.dwg</small></span><span class="fsub-tag">4 files</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">📅</span><span class="ftree-name">02 - CPM Schedule</span><span class="ftree-meta" style="color:#dc2626;">⚠️ Stale Sep 2025</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">CPM-Civil/ <span style="color:#dc2626;">⚠️</span><br><small>80080-ZA-007-F.xer · OVERALL CIVIL WORKS.pdf · MS-01 to MS-05 PDFs</small></span><span class="fsub-tag">7 files</span></div>
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">CPM-Building/ <span style="color:#dc2626;">⚠️</span><br><small>80080-ZA-007-F.xer · ALL PACKAGES BUILDINGS CPM.pdf · MS-01 to MS-03 PDFs</small></span><span class="fsub-tag">5 files</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">📬</span><span class="ftree-name">03 - Document Control</span><span class="ftree-meta">TRA-00142 Latest</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">TR to SINOHYDRO 01.04.2026/<br><small>Latest transmittal folder — TRA-00142 (31 Mar 2026)</small></span><span class="fsub-tag">Active</span></div>
+        <div class="fsub"><span class="fsub-icon">📊</span><span class="fsub-name">142 transmittals total received to date</span><span class="fsub-tag">Nov 25 → Mar 26</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">🏗️</span><span class="ftree-name">04 - Package C09-K Civil Works</span><span class="ftree-meta">Sep 2025</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">Civil Construction Package/<br><small>Package scope documents, method statements, ITP</small></span><span class="fsub-tag">Static</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">🏢</span><span class="ftree-name">05 - Package C11-K Buildings</span><span class="ftree-meta">Sep 2025</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">Building Construction Package/<br><small>Package scope documents, method statements, ITP</small></span><span class="fsub-tag">Static</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">🏕️</span><span class="ftree-name">06 - Site Administration</span><span class="ftree-meta">Oct–Nov 2025</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📄</span><span class="fsub-name">Mobilisation Plan.docx</span></div>
+        <div class="fsub"><span class="fsub-icon">📊</span><span class="fsub-name">Appendix 1–4 — Personnel &amp; Equipment</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">⚖️</span><span class="ftree-name">07 - Administration &amp; Claims</span><span class="ftree-meta">Nov 2025</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">Administration/<br><small>SFR / FEWO claim documents, correspondence</small></span><span class="fsub-tag">Claims</span></div>
+      </div>
+    </div>
+    <div class="ftree">
+      <div class="ftree-head"><span class="ftree-icon">📋</span><span class="ftree-name">08 - Reports &amp; Highlights</span><span class="ftree-meta" style="color:#16a34a;">✅ Active — Apr 2026</span></div>
+      <div class="ftree-body">
+        <div class="fsub"><span class="fsub-icon">📁</span><span class="fsub-name">Daily Reports/<br><small>DPR 110–114 (latest batch) · Daily Highlights Apr 3–5 2026</small></span><span class="fsub-tag">Active</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec"><span class="sec-dot"></span>Root Folder — Notable Files</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Filename</th><th>Type</th><th>Date Added</th><th>Priority</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr style="background:#fef2f2;">
+          <td><strong>Delay Justification Report - 19.8% - SCL C09K C11K - Apr 2026.docx</strong></td>
+          <td>Word Doc</td>
+          <td>5 Apr 2026 · 09:23</td>
+          <td><span class="pill p-crit">🚨 CRITICAL</span></td>
+          <td>Formal delay claim — most significant document this month</td>
+        </tr>
+        <tr>
+          <td>Project Dashboard.html</td>
+          <td>HTML</td>
+          <td>5 Apr 2026 · 10:00</td>
+          <td><span class="pill p-new">Dashboard</span></td>
+          <td>This file — share directly with colleagues</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════ TAB 8: REFINERY TECH ═══════════════════ -->
+<div id="tab-refinery" class="panel">
+
+  <div class="sec"><span class="sec-dot"></span>Process Unit Configuration — Deep Conversion Refinery</div>
+  <div class="unit-grid">
+    <div class="unit"><div class="unit-code">CDU</div><div class="unit-name">Crude Distillation Unit</div><div class="unit-desc">Primary atmospheric distillation of 110,000 bpd Hassi Messaoud crude. Separates into naphtha, kerosene, gas oil, and residue fractions.</div></div>
+    <div class="unit"><div class="unit-code">VDU</div><div class="unit-name">Vacuum Distillation Unit</div><div class="unit-desc">Processes atmospheric residue under vacuum to extract vacuum gas oil (VGO) and vacuum residue for downstream conversion.</div></div>
+    <div class="unit"><div class="unit-code">HCU</div><div class="unit-name">Hydrocracker Unit</div><div class="unit-desc">Key "deep conversion" unit. Converts heavy VGO into diesel and naphtha using hydrogen under high pressure. Maximises distillate yield.</div></div>
+    <div class="unit"><div class="unit-code">HDS</div><div class="unit-name">Gas Oil Hydrodesulfurizer</div><div class="unit-desc">Removes sulphur from gas oil streams to meet Euro-standard diesel specifications (≤10 ppm S).</div></div>
+    <div class="unit"><div class="unit-code">NHT</div><div class="unit-name">Naphtha Hydrotreating</div><div class="unit-desc">Pre-treats naphtha before catalytic reforming to remove sulphur, nitrogen, and metals that would poison the reformer catalyst.</div></div>
+    <div class="unit"><div class="unit-code">CCR</div><div class="unit-name">Continuous Catalytic Reformer</div><div class="unit-desc">Converts hydrotreated naphtha into high-octane reformate for gasoline blending and produces hydrogen as a by-product for HCU/HDS.</div></div>
+    <div class="unit"><div class="unit-code">ISOM</div><div class="unit-name">Isomerization Unit</div><div class="unit-desc">Converts light straight-run naphtha (C5/C6) into higher-octane isomerate for gasoline blending pool.</div></div>
+    <div class="unit"><div class="unit-code">SDA</div><div class="unit-name">Solvent Deasphalting</div><div class="unit-desc">Extracts deasphalted oil (DAO) from vacuum residue using propane/butane solvent. Enables deep conversion of heavy residue.</div></div>
+    <div class="unit"><div class="unit-code">ARU</div><div class="unit-name">Amine Recovery Unit</div><div class="unit-desc">Recovers H₂S from sour gas streams across the refinery using amine absorption. Feeds sulphur recovery.</div></div>
+    <div class="unit"><div class="unit-code">SRU</div><div class="unit-name">Sulphur Recovery Unit</div><div class="unit-desc">Converts H₂S from ARU into elemental sulphur (Claus process). Required for environmental compliance and export.</div></div>
+    <div class="unit"><div class="unit-code">WWTP</div><div class="unit-name">Wastewater Treatment Plant</div><div class="unit-desc">Treats process wastewater and cooling water blowdown to meet Algerian environmental discharge standards.</div></div>
+  </div>
+
+  <div class="g2">
+    <div>
+      <div class="sec"><span class="sec-dot"></span>Refinery Specifications</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">Configuration</div><div class="info-val">Deep Conversion (Hydrocracking)</div></div>
+        <div class="info-row"><div class="info-key">Crude Throughput</div><div class="info-val">110,000 bpd</div></div>
+        <div class="info-row"><div class="info-key">Annual Throughput</div><div class="info-val">5 million tonnes/year</div></div>
+        <div class="info-row"><div class="info-key">Crude Feed</div><div class="info-val">Hassi Messaoud field (direct feed)</div></div>
+        <div class="info-row"><div class="info-key">Primary Products</div><div class="info-val">Diesel · Gasoline · LPG</div></div>
+        <div class="info-row"><div class="info-key">Diesel Standard</div><div class="info-val">Euro-standard (≤10 ppm sulphur)</div></div>
+        <div class="info-row"><div class="info-key">Location</div><div class="info-val">Haoud El Hamra, Ouargla Province</div></div>
+        <div class="info-row"><div class="info-key">By-Products</div><div class="info-val">Elemental sulphur, hydrogen (internal)</div></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="sec"><span class="sec-dot"></span>SCL Civil Scope — Process Unit Mapping</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">PKG 01 (Areas 0001/0100/0150/0190)</div><div class="info-val">Main process unit foundations — CDU/VDU/HCU</div></div>
+        <div class="info-row"><div class="info-key">PKG 04 (Areas 0420/0430/0440/0450)</div><div class="info-val">Utilities — cooling water, power, steam</div></div>
+        <div class="info-row"><div class="info-key">PKG 05 (Areas 0510–0595)</div><div class="info-val">Offsite — tankage, flare, WWTP, SRU</div></div>
+        <div class="info-row"><div class="info-key">Interconnecting (Areas 0200/0210)</div><div class="info-val">Pipe racks &amp; interconnecting foundations</div></div>
+      </div></div>
+
+      <div class="sec" style="margin-top:16px;"><span class="sec-dot"></span>Algeria Refining Context</div>
+      <div class="card"><div class="card-body">
+        <div class="info-row"><div class="info-key">Algeria Oil Production</div><div class="info-val">~1.0–1.1 million bpd (2025)</div></div>
+        <div class="info-row"><div class="info-key">HM Field Output</div><div class="info-val">~450,000 bpd (~41% of national output)</div></div>
+        <div class="info-row"><div class="info-key">New Refinery Feed</div><div class="info-val">110,000 bpd (~24% of HM field output)</div></div>
+        <div class="info-row"><div class="info-key">Sonatrach Investment Plan</div><div class="info-val">$7B+ in refining 2025–2030</div></div>
+        <div class="info-row"><div class="info-key">SCL Strategic Importance</div><div class="info-val">Civil works on critical path — CMS-04 Feb 2027</div></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="alert good">✅ <div><strong>SCL's Critical Role:</strong> C09-K civil works provide foundations for all 11 process units. CMS-04 (Interconnecting, Feb 2027) is directly on the overall refinery critical path. No piping erection can begin without SCL's interconnecting foundations.</div></div>
+</div>
+
+<!-- ═══════════════════ TAB: RECENT NEWS ═══════════════════ -->
+<div id="tab-news" class="panel">
+
+  <div class="alert info" style="margin-bottom:18px;">
+    📡 <div><strong>Live Intelligence Feed</strong> — News relevant to the Hassi Messaoud Refinery project and the Algerian macro-economy. Updated: <strong>5 April 2026</strong>. Sources: AGBI, AL24 News, World Bank, NS Energy, Energy Capital &amp; Power.</div>
+  </div>
+
+  <!-- ── PROJECT NEWS ── -->
+  <div class="sec"><span class="sec-dot" style="background:#0891b2;"></span>🏗️ Project &amp; Refinery News</div>
+
+  <div class="g21">
+    <div class="card">
+      <div class="card-head">🗞️ Latest Developments — Hassi Messaoud Refinery</div>
+      <div class="card-body">
+
+        <div class="news-item">
+          <div class="news-icon">🔑</div>
+          <div class="news-body">
+            <div class="news-date">Feb 2025 — MEES / Atalayar</div>
+            <div class="news-title">Prime Minister Larbaoui Inaugurates Refinery at Haoud El-Hamra</div>
+            <div class="news-desc">PM Nadir Larbaoui laid the foundation stone and officially launched construction at the Haoud El-Hamra site. Works restarted under the TR-SE (Técnicas Reunidas 51% + Sinopec Guangzhou 49%) EPC JV following resolution of the 2023 cost dispute with Sonatrach. Project relaunch value confirmed at ~$4 billion.</div>
+          </div>
+        </div>
+
+        <div class="news-item">
+          <div class="news-icon">⏱️</div>
+          <div class="news-body">
+            <div class="news-date">Aug 2025 — Algerie-Eco / NS Energy</div>
+            <div class="news-title">First Production Units Targeted for Late 2027</div>
+            <div class="news-desc">Sonatrach confirmed the refinery's first units are expected to be operational by end-2027 (65-month construction programme). Capacity: 5 Mt/y (110,000 bpd). Outputs will include 1.31 Mt/y gasoline, plus propane, butane, kerosene and bitumen. Over 10,000 construction-phase jobs anticipated — directly supporting SCL subcontract scope.</div>
+          </div>
+        </div>
+
+        <div class="news-item">
+          <div class="news-icon">🏢</div>
+          <div class="news-body">
+            <div class="news-date">Mar 2025 — MEES</div>
+            <div class="news-title">Sinopec Algeria Signs $850M Exploration Deal Alongside Refinery Relaunch</div>
+            <div class="news-desc">As work commenced on the long-delayed refinery, Sinopec simultaneously signed an $850M upstream exploration agreement with Sonatrach — reinforcing the China-Algeria energy partnership that underpins the entire project. Sinohydro (SCL), as Sinopec subsidiary, benefits from this strategic alignment.</div>
+          </div>
+        </div>
+
+        <div class="news-item">
+          <div class="news-icon">⚠️</div>
+          <div class="news-body">
+            <div class="news-date">Apr 2026 — Internal / SCL</div>
+            <div class="news-title">SCL Files 19.8% Delay Justification — C09-K &amp; C11-K</div>
+            <div class="news-desc">Sinohydro Corporation Limited has formally filed a Delay Justification Report covering both C09-K (Civil Works, ~$125M) and C11-K (Buildings, ~$67M) subcontracts. The 19.8% delay is attributed to client-side interface issues and design deliverable delays. Submission to UTE TR-SE pending formal review. A total of ~25.8 billion DZD (~$193M) is at stake across both contracts.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="card">
+        <div class="card-head">📊 Project Quick Stats</div>
+        <div class="card-body">
+          <div class="info-row"><span class="info-key">Refinery Capacity</span><span class="info-val">5 Mt/y · 110,000 bpd</span></div>
+          <div class="info-row"><span class="info-key">EPC Contract Value</span><span class="info-val">~$4 billion</span></div>
+          <div class="info-row"><span class="info-key">SCL Subcontract Total</span><span class="info-val">~$193M (25.8B DZD)</span></div>
+          <div class="info-row"><span class="info-key">Construction Duration</span><span class="info-val">65 months</span></div>
+          <div class="info-row"><span class="info-key">First Units Online</span><span class="info-val">End 2027 (target)</span></div>
+          <div class="info-row"><span class="info-key">Jobs Created</span><span class="info-val">10,000+ construction</span></div>
+          <div class="info-row"><span class="info-key">SCL Delay Filed</span><span class="info-val" style="color:#dc2626;">19.8% — Apr 2026</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">🔗 Related Projects — Algeria $7B Downstream Push</div>
+        <div class="card-body" style="font-size:.76rem;color:var(--gray600);line-height:1.6;">
+          Algeria is simultaneously pursuing a <strong>$7 billion petrochemical &amp; refining programme</strong> (Zawya, 2025). The Hassi Messaoud refinery is the flagship downstream project, complemented by polypropylene and petrochemical plants discussed between Sonatrach and Técnicas Reunidas at their bilateral meetings.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ALGERIA ECONOMY NEWS ── -->
+  <div class="sec" style="margin-top:8px;"><span class="sec-dot" style="background:#16a34a;"></span>🇩🇿 Algeria Macro-Economy — April 2026</div>
+
+  <div class="g3">
+
+    <div class="card">
+      <div class="card-head">📈 GDP &amp; Growth Outlook</div>
+      <div class="card-body">
+        <div class="news-item">
+          <div class="news-icon">📊</div>
+          <div class="news-body">
+            <div class="news-date">2026 Finance Bill / AL24 News</div>
+            <div class="news-title">Economy Projected to Grow 4.1% in 2026, 4.4% in 2027</div>
+            <div class="news-desc">Algeria's official Finance Bill projects solid GDP expansion of 4.1% in 2026 and 4.4% in 2027, driven by non-hydrocarbon sector dynamism and ramping upstream production. Non-hydrocarbon GDP grew 5.4% in H1 2025.</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <div class="news-icon">💹</div>
+          <div class="news-body">
+            <div class="news-date">World Bank — Fall 2025</div>
+            <div class="news-title">Inflation Eased to 1.7% — Exchange Rate Stable</div>
+            <div class="news-desc">Inflation fell sharply from highs above 9% (2023) to 1.7% over the first nine months of 2025, supported by food price decreases and a stable DZD exchange rate. The fixed 1 USD = 134 DZD rate in SCL's subcontract provides good budget certainty.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">⛽ Oil &amp; Gas Sector Updates</div>
+      <div class="card-body">
+        <div class="news-item">
+          <div class="news-icon">🛢️</div>
+          <div class="news-body">
+            <div class="news-date">Jan 2026 — AGBI</div>
+            <div class="news-title">Algeria Approves $60B 5-Year Hydrocarbon Plan (2026–2030)</div>
+            <div class="news-desc">Sonatrach's board endorsed a $60 billion development plan targeting gas production of ~200 bcm/y by 2030 (vs. ~137 bcm today). The plan covers E&amp;P, refining, and petrochemicals — positioning Hassi Messaoud as a strategic national asset.</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <div class="news-icon">🔍</div>
+          <div class="news-body">
+            <div class="news-date">Apr 2026 — AGBI</div>
+            <div class="news-title">Algeria Launches 2026 Bid Round — 7 Blocks Offered April 19</div>
+            <div class="news-desc">Algeria is offering 7 exploration blocks to international oil companies from April 19, 2026 as part of the Algeria Bid Round 2026. The round signals aggressive upstream investment push to arrest oil production declines (-10% since 2022) and unlock new reserves ahead of the 2030 production targets.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">🌍 Strategic &amp; Macro Context</div>
+      <div class="card-body">
+        <div class="news-item">
+          <div class="news-icon">🌿</div>
+          <div class="news-body">
+            <div class="news-date">Dec 2025 — World Bank</div>
+            <div class="news-title">World Bank Partners Algeria on Sustainable Development</div>
+            <div class="news-desc">The World Bank approved a new partnership framework to support Algeria's climate transition and sustainable growth. The programme includes energy sector diversification, infrastructure investment, and workforce development — all creating a stable macro environment for large EPC projects.</div>
+          </div>
+        </div>
+        <div class="news-item">
+          <div class="news-icon">🏭</div>
+          <div class="news-body">
+            <div class="news-date">Allianz Trade — 2026 Country Report</div>
+            <div class="news-title">Algeria Rated Stable Risk for Construction Investment</div>
+            <div class="news-desc">Algeria's country risk profile remains stable with robust FX reserves (~$70B), low external debt, and strong government commitment to infrastructure spending. The construction sector — including the downstream refining push — benefits from continued public investment in energy infrastructure.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── IMPLICATIONS FOR SCL ── -->
+  <div class="sec" style="margin-top:8px;"><span class="sec-dot" style="background:#7c3aed;"></span>🎯 News Implications for SCL (C09-K / C11-K)</div>
+  <div class="g2">
+    <div class="alert warn">⚠️ <div><strong>Delay Claim Environment:</strong> The refinery relaunch (Feb 2025) was itself delayed from the 2023 original schedule. Algeria's national priority on completing the refinery by 2027 creates pressure on TR-SE to resolve SCL's 19.8% delay claim promptly to avoid further overall programme slippage.</div></div>
+    <div class="alert good">✅ <div><strong>Macro Tailwinds:</strong> Algeria's GDP growth (4.1% in 2026), stable DZD exchange rate, and Sonatrach's $60B investment plan all reinforce the project's long-term strategic importance — reducing sovereign/payment risk for SCL's ~$193M subcontract portfolio.</div></div>
+    <div class="alert info">📋 <div><strong>OPEC+ Production Ramp:</strong> Algeria's oil production is projected to increase ~15% in 2026 as OPEC+ quotas expand. Higher oil revenues directly strengthen Sonatrach's and the government's ability to fund the refinery project and honour payment obligations down the contract chain.</div></div>
+    <div class="alert info">🔗 <div><strong>Bid Round 2026 (April 19):</strong> New upstream licensing rounds mean more energy infrastructure projects are likely to follow. SCL's track record on C09-K/C11-K positions it competitively for future civil &amp; buildings subcontracts in Algeria's expanding energy footprint.</div></div>
+  </div>
+
+  <!-- ── SOURCES ── -->
+  <div class="card" style="margin-top:8px;">
+    <div class="card-head">📚 News Sources — April 2026</div>
+    <div class="card-body" style="font-size:.73rem;line-height:1.9;color:var(--gray600);">
+      <a href="https://al24news.dz/en/algerias-economy-set-to-grow-by-4-1-in-2026-and-4-4-in-2027-finance-bill-projects/" target="_blank" style="color:var(--blue);text-decoration:none;">AL24 News — Algeria GDP 4.1% Growth Forecast 2026</a> &nbsp;|&nbsp;
+      <a href="https://www.agbi.com/oil-and-gas/2026/04/algeria-to-offer-oil-companies-7-sites-on-april-19/" target="_blank" style="color:var(--blue);text-decoration:none;">AGBI — Algeria Bid Round 2026 (7 Sites, April 19)</a> &nbsp;|&nbsp;
+      <a href="https://www.agbi.com/oil-and-gas/2026/01/algeria-approves-5-year-hydrocarbon-development-plan/" target="_blank" style="color:var(--blue);text-decoration:none;">AGBI — $60B 5-Year Hydrocarbon Plan</a> &nbsp;|&nbsp;
+      <a href="https://www.atalayar.com/en/articulo/economy-and-business/nadir-larbaoui-inaugurates-the-new-algerian-oil-refinery-in-haoud-hamra/20250226153529211763.html" target="_blank" style="color:var(--blue);text-decoration:none;">Atalayar — PM Larbaoui Inaugurates Refinery</a> &nbsp;|&nbsp;
+      <a href="https://www.nsenergybusiness.com/projects/hassi-messaoud-oil-refinery-project/" target="_blank" style="color:var(--blue);text-decoration:none;">NS Energy — Refinery Project Profile</a> &nbsp;|&nbsp;
+      <a href="https://www.mees.com/2025/3/7/refining-petrochemicals/sinopec-algeria-850mn-exploration-deal-as-work-starts-on-long-delayed-refinery/eb1660e0-fb5b-11ef-9ee4-7d6b6053753e" target="_blank" style="color:var(--blue);text-decoration:none;">MEES — Sinopec $850M Deal + Refinery Relaunch</a> &nbsp;|&nbsp;
+      <a href="https://www.worldbank.org/en/news/press-release/2025/12/04/algeria-responding-to-climate-challenges-and-supporting-sustainable-development" target="_blank" style="color:var(--blue);text-decoration:none;">World Bank — Algeria Sustainable Development</a> &nbsp;|&nbsp;
+      <a href="https://thedocs.worldbank.org/en/doc/65cf93926fdb3ea23b72f277fc249a72-0500042021/related/mpo-dza.pdf" target="_blank" style="color:var(--blue);text-decoration:none;">World Bank MPO — Algeria Economic Outlook</a> &nbsp;|&nbsp;
+      <a href="https://www.allianz-trade.com/en_global/economic-research/country-reports/Algeria.html" target="_blank" style="color:var(--blue);text-decoration:none;">Allianz Trade — Algeria Country Risk 2026</a>
+    </div>
+  </div>
+
+</div><!-- /tab-news -->
+
+</div><!-- /page -->
+
+<!-- ── FOOTER ── -->
+<div class="sources">
+  <strong>Project:</strong> Réalisation d'une Raffinerie de Pétrole Brut à Conversion Profonde — Haoud El Hamra, Hassi Messaoud, Algeria &nbsp;|&nbsp;
+  <strong>Owner:</strong> Sonatrach SPA &nbsp;|&nbsp; <strong>EPC:</strong> UTE TR-SE (Técnicas Reunidas 51% + Sinopec Guangzhou Engineering 49%) &nbsp;|&nbsp; <strong>Subcontractor:</strong> Sinohydro Corporation Limited (SCL)<br>
+  <strong>Dashboard updated:</strong> 5 April 2026 · 10:00 AM &nbsp;|&nbsp; <strong>Sources:</strong>
+  <a href="https://www.mees.com/2025/3/7/refining-petrochemicals/sinopec-algeria-850mn-exploration-deal-as-work-starts-on-long-delayed-refinery/eb1660e0-fb5b-11ef-9ee4-7d6b6053753e" target="_blank">MEES (Mar 2025)</a> &nbsp;|&nbsp;
+  <a href="https://deepnewz.com/africa/tecnicas-reunidas-sinopec-sonatrach-relaunch-eur4-000-m-hassi-messaoud-refinery-86b6d0cf" target="_blank">DeepNewz — €4B Relaunch</a> &nbsp;|&nbsp;
+  <a href="https://algerie-eco.com/2025/08/09/sonatrach-la-nouvelle-raffinerie-de-hassi-messaoud-entrera-en-production-en-2027/" target="_blank">Algerie-Eco (Aug 2025)</a> &nbsp;|&nbsp;
+  Local project files: /Hassi Masoud/ — Sinohydro SCL
+</div>
+
+<!-- ── SCRIPTS ── -->
+<script>
+function show(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'overview') renderOverviewCharts();
+  if (id === 'transmittals') renderTRACharts();
+  if (id === 'cpm') renderDelayChart();
+  if (id === 'dpr') renderWorkforceCharts();
+}
+
+function filterTbl(id, q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#' + id + ' tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function copyLink() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied to clipboard!'));
+  } else {
+    alert('Open this file in a browser, then share the file path with your colleagues.');
+  }
+}
+
+Chart.defaults.font.family = "'Segoe UI', system-ui, Arial, sans-serif";
+Chart.defaults.font.size = 12;
+let rendered = {};
+
+function renderOverviewCharts() {
+  if (rendered.overview) return; rendered.overview = true;
+  new Chart(document.getElementById('chartDisc'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Civil (CIV) — 378', 'Architecture (ARC) — 45', 'Electrical (ELE) — 12'],
+      datasets: [{ data: [378, 45, 12], backgroundColor: ['#2563eb','#ec4899','#f59e0b'], borderWidth: 3, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw} (${Math.round(c.raw/435*100)}%)` } } } }
+  });
+  new Chart(document.getElementById('chartPkg'), {
+    type: 'bar',
+    data: {
+      labels: ['PKG 01', 'Interconnecting', 'PKG 05', 'PKG 04', 'Standards'],
+      datasets: [
+        { label: 'Civil', data: [181, 59, 61, 38, 27], backgroundColor: '#2563eb' },
+        { label: 'Architecture', data: [13, 5, 23, 6, 7], backgroundColor: '#ec4899' },
+        { label: 'Electrical', data: [2, 2, 4, 3, 1], backgroundColor: '#f59e0b' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#f1f5f9' } } },
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } } } }
+  });
+}
+
+function renderTRACharts() {
+  if (rendered.tra) return; rendered.tra = true;
+  new Chart(document.getElementById('chartMonth'), {
+    type: 'bar',
+    data: {
+      labels: ['Nov 2025', 'Dec 2025', 'Jan 2026', 'Feb 2026', 'Mar 2026', 'Apr 2026'],
+      datasets: [{
+        label: 'Transmittals',
+        data: [18, 26, 29, 38, 31, 0],
+        backgroundColor: ['#6366f1','#2563eb','#0891b2','#059669','#d97706','#dc2626'],
+        borderRadius: 6
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 5 } }, x: { grid: { display: false } } },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => c.dataIndex === 5 ? ' 0 (Apr 1–5, weekend)' : ` ${c.raw} transmittals` } } } }
+  });
+  new Chart(document.getElementById('chartPkg2'), {
+    type: 'doughnut',
+    data: {
+      labels: ['PKG 01 — 196', 'Interconnecting — 66', 'PKG 05 — 88', 'PKG 04 — 47', 'Standards — 35'],
+      datasets: [{ data: [196, 66, 88, 47, 35], backgroundColor: ['#16a34a','#0891b2','#ea580c','#7c3aed','#64748b'], borderWidth: 3, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 11, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw} drawings` } } } }
+  });
+}
+
+function renderDelayChart() {
+  if (rendered.delay) return; rendered.delay = true;
+  const el = document.getElementById('delayChart');
+  if (!el) return;
+  // Days from today (6 Apr 2026) to each baseline finish date
+  // Projected = baseline + 127 days (19.8% of 641-day programme)
+  new Chart(el.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: [
+        'CMS-04 Interconnecting (C09-K)',
+        'CMS-02 PKG-04 Civil',
+        'CMS-03 PKG-05 Civil',
+        'CMS-01 PKG-01 Civil',
+        'CMS-05 Civil Final',
+        'B-CMS-02 PKG-04 Bldgs',
+        'B-CMS-01 PKG-01 Bldgs',
+        'B-CMS-04 Bldgs Final'
+      ],
+      datasets: [
+        {
+          label: 'Baseline (days from 6 Apr 2026)',
+          data: [328, 359, 359, 388, 603, 328, 359, 572],
+          backgroundColor: 'rgba(37,99,235,0.82)',
+          borderColor: '#1d4ed8',
+          borderWidth: 1,
+          borderRadius: 5
+        },
+        {
+          label: 'Projected with 19.8% Delay (days from 6 Apr 2026)',
+          data: [455, 486, 486, 515, 730, 455, 486, 699],
+          backgroundColor: 'rgba(220,38,38,0.80)',
+          borderColor: '#b91c1c',
+          borderWidth: 1,
+          borderRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      scales: {
+        x: {
+          beginAtZero: true,
+          title: { display: true, text: 'Days from Today (6 Apr 2026)', font: { size: 11 }, color: '#475569' },
+          grid: { color: '#f1f5f9' },
+          ticks: {
+            color: '#475569',
+            callback: function(v) {
+              // Convert days to approximate month label
+              const d = new Date(2026, 3, 6);
+              d.setDate(d.getDate() + v);
+              return d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+            }
+          }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#1e293b', font: { size: 10 } }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { padding: 18, font: { size: 11 }, color: '#1e293b', boxWidth: 14 }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(c) {
+              const d = new Date(2026, 3, 6);
+              d.setDate(d.getDate() + c.raw);
+              const fmt = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+              const slip = c.datasetIndex === 1 ? '  (+127 days vs baseline)' : '';
+              return ' ' + c.dataset.label.split(' (')[0] + ': ' + fmt + slip;
+            }
+          }
+        },
+        annotation: {}
+      }
+    }
+  });
+}
+
+function renderWorkforceCharts() {
+  if (rendered.workforce) return; rendered.workforce = true;
+
+  const labels = ['9-Mar','10-Mar','11-Mar','12-Mar','14-Mar','15-Mar','16-Mar','17-Mar',
+    '18-Mar','19-Mar','21-Mar','22-Mar','23-Mar','24-Mar','25-Mar','28-Mar','29-Mar',
+    '30-Mar','31-Mar','1-Apr','2-Apr','4-Apr','5-Apr'];
+  const direct   = [208,208,213,210,220,190,194,211,170,162,123,165,207,191,224,245,227,248,249,315,318,311,299];
+  const indirect = [47,47,47,47,47,47,47,47,39,39,39,39,39,39,39,39,39,39,39,47,47,47,47];
+  const total    = [255,255,260,257,267,237,241,258,209,201,162,204,246,230,263,284,266,287,288,362,365,358,346];
+  const equip    = [27,27,28,27,28,25,25,27,22,20,16,22,26,24,28,32,30,32,32,40,42,40,42];
+
+  // ── Chart 1: Total Workforce Trend (line) ──────────────────────────────────
+  new Chart(document.getElementById('chartWorkforce'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Total On-Site', data: total,
+          borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.10)',
+          fill: true, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
+          borderWidth: 2.5, pointBackgroundColor: '#2563eb'
+        },
+        {
+          label: 'Direct Labour', data: direct,
+          borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.08)',
+          fill: false, tension: 0.35, pointRadius: 3, pointHoverRadius: 6,
+          borderWidth: 2, pointBackgroundColor: '#16a34a'
+        },
+        {
+          label: 'Indirect Staff', data: indirect,
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)',
+          fill: false, tension: 0.35, pointRadius: 3, pointHoverRadius: 6,
+          borderWidth: 2, borderDash: [5,3], pointBackgroundColor: '#f59e0b'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { padding: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw} persons` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { min: 0, max: 420, grid: { color: '#f1f5f9' },
+             ticks: { font: { size: 11 } },
+             title: { display: true, text: 'Persons on Site', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ── Chart 2: Equipment Trend (bar + line combo) ────────────────────────────
+  new Chart(document.getElementById('chartEquipment'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Equipment Working', data: equip,
+          backgroundColor: equip.map(v => v >= 40 ? 'rgba(37,99,235,0.75)' : v >= 30 ? 'rgba(245,158,11,0.75)' : 'rgba(156,163,175,0.6)'),
+          borderColor: equip.map(v => v >= 40 ? '#1d4ed8' : v >= 30 ? '#d97706' : '#9ca3af'),
+          borderWidth: 1.5, borderRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { padding: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => ` Equipment working: ${c.raw} units` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { min: 0, max: 55, grid: { color: '#f1f5f9' },
+             ticks: { font: { size: 11 } },
+             title: { display: true, text: 'Units Working', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ── Chart 3: Labour Breakdown — DPR-115 (doughnut) ────────────────────────
+  new Chart(document.getElementById('chartLaborBreakdown'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Helper','Steel Bender','Carpenter','Driver','Operator','Mason','Foreman','Electrician','Welder'],
+      datasets: [{
+        data: [152, 47, 42, 6, 21, 16, 10, 4, 1],
+        backgroundColor: ['#2563eb','#dc2626','#16a34a','#f59e0b','#7c3aed','#0891b2','#ea580c','#db2777','#64748b'],
+        borderWidth: 3, borderColor: '#fff', hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { padding: 10, font: { size: 11 }, boxWidth: 13 } },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw} (${Math.round(c.raw/299*100)}% of direct)` } }
+      }
+    }
+  });
+
+  // ── Chart 4: Direct vs Indirect Stacked Area ───────────────────────────────
+  new Chart(document.getElementById('chartDirectIndirect'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Direct Labour', data: direct,
+          backgroundColor: 'rgba(22,163,74,0.75)', borderColor: '#16a34a',
+          borderWidth: 1, stack: 'workforce', borderRadius: 2
+        },
+        {
+          label: 'Indirect Staff', data: indirect,
+          backgroundColor: 'rgba(245,158,11,0.75)', borderColor: '#d97706',
+          borderWidth: 1, stack: 'workforce', borderRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { padding: 14, font: { size: 11 } } },
+        tooltip: { callbacks: {
+          label: c => ` ${c.dataset.label}: ${c.raw}`,
+          footer: items => `  Total: ${items.reduce((s,i) => s+i.raw, 0)} persons`
+        }}
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { stacked: true, min: 0, max: 420, grid: { color: '#f1f5f9' },
+             ticks: { font: { size: 11 } },
+             title: { display: true, text: 'Persons', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ── Chart 5: Indirect Staff Breakdown — DPR-115 (doughnut) ────────────────
+  new Chart(document.getElementById('chartIndirectBreakdown'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Management','Engineering','Admin','Supervision','Cost Control','Site Mgmt','Procurement','HSE','Quality','Planning'],
+      datasets: [{
+        data: [8, 6, 5, 5, 5, 5, 5, 4, 3, 1],
+        backgroundColor: ['#1e40af','#2563eb','#3b82f6','#60a5fa','#7c3aed','#8b5cf6','#a78bfa','#0891b2','#06b6d4','#67e8f9'],
+        borderWidth: 3, borderColor: '#fff', hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { padding: 8, font: { size: 10.5 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw} (${Math.round(c.raw/47*100)}% of indirect)` } }
+      }
+    }
+  });
+
+  // ── Chart 6: Estimated Manhours (direct × 9h + indirect × 8h) ─────────────
+  const manhoursD = direct.map(v => v * 9);
+  const manhoursI = indirect.map(v => v * 8);
+  const manhoursT = manhoursD.map((v,i) => v + manhoursI[i]);
+  new Chart(document.getElementById('chartManhours'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Est. Manhours (Total)', data: manhoursT,
+          borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.10)',
+          fill: true, tension: 0.35, pointRadius: 3.5, pointHoverRadius: 7,
+          borderWidth: 2.5, pointBackgroundColor: '#7c3aed'
+        },
+        {
+          label: 'Direct (×9h)', data: manhoursD,
+          borderColor: '#16a34a', fill: false, tension: 0.35,
+          pointRadius: 2.5, borderWidth: 1.8, borderDash: [4,2], pointBackgroundColor: '#16a34a'
+        },
+        {
+          label: 'Indirect (×8h)', data: manhoursI,
+          borderColor: '#f59e0b', fill: false, tension: 0.35,
+          pointRadius: 2.5, borderWidth: 1.8, borderDash: [4,2], pointBackgroundColor: '#f59e0b'
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', labels: { padding: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.raw.toLocaleString()} hrs` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { min: 0, grid: { color: '#f1f5f9' },
+             ticks: { font: { size: 11 }, callback: v => v.toLocaleString() },
+             title: { display: true, text: 'Man-Hours / Day', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// Initial render
+renderOverviewCharts();
+</script>
+</body>
+</html>
